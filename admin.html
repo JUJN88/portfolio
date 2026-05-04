@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 · 祝光军作品集</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#050505;color:#eaeef2;font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.5;min-height:100vh;}
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.login-box{background:#0a0a0a;border:1px solid #222;padding:2.5rem;max-width:380px;width:100%;}
+.login-box h2{font-size:1.4rem;font-weight:500;margin-bottom:0.5rem;}
+.login-box p{font-size:0.85rem;color:#6b727c;margin-bottom:1.5rem;}
+.login-box input[type="password"]{width:100%;background:#111;border:1px solid #2a2a2a;color:#eaeef2;padding:0.7rem 1rem;font-size:0.95rem;outline:none;margin-bottom:1rem;}
+.login-box input[type="password"]:focus{border-color:#555;}
+.login-box button{width:100%;background:#eaeef2;color:#000;border:none;padding:0.7rem;font-size:0.95rem;font-weight:500;cursor:pointer;transition:0.2s;}
+.login-box button:hover{background:#fff;}
+.login-error{color:#ef4444;font-size:0.8rem;margin-bottom:0.8rem;display:none;}
+.admin-screen{display:none;}.admin-screen.active{display:block;}
+.admin-nav{position:sticky;top:0;z-index:1000;background:rgba(10,10,10,0.96);backdrop-filter:blur(20px);border-bottom:1px solid #1f1f1f;padding:0 2rem;}
+.admin-nav-inner{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;height:56px;gap:1rem;}
+.admin-logo{font-size:1.2rem;font-weight:500;letter-spacing:-0.3px;white-space:nowrap;}
+.admin-nav-links{display:flex;gap:0.3rem;overflow-x:auto;flex:1;}
+.admin-nav-links button{background:transparent;border:1px solid transparent;color:#6b727c;padding:0.4rem 1rem;font-size:0.85rem;cursor:pointer;transition:0.2s;white-space:nowrap;}
+.admin-nav-links button:hover,.admin-nav-links button.active{color:#eaeef2;border-color:#2a2a2a;background:#111;}
+.admin-exit{background:transparent;border:1px solid #333;color:#9da3ab;padding:0.35rem 1rem;font-size:0.8rem;cursor:pointer;transition:0.2s;white-space:nowrap;}
+.admin-exit:hover{border-color:#666;color:#fff;}
+.admin-content{max-width:1400px;margin:0 auto;padding:2rem;}
+.admin-section{display:none;}.admin-section.active{display:block;}
+.admin-section h2{font-size:1.5rem;font-weight:500;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #1f1f1f;}
+.admin-card{background:#0a0a0a;border:1px solid #1c1c1c;padding:1.5rem;margin-bottom:1.5rem;}
+.admin-card h3{font-size:1rem;font-weight:500;margin-bottom:1rem;color:#cbd0d6;}
+.form-row{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;}
+.form-group{flex:1;min-width:200px;}
+.form-group label{display:block;font-size:0.75rem;color:#6b727c;margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.5px;}
+input[type="text"],input[type="number"],textarea,select{width:100%;background:#111;border:1px solid #2a2a2a;color:#eaeef2;padding:0.6rem 0.9rem;font-size:0.9rem;font-family:inherit;outline:none;transition:border-color 0.2s;}
+input:focus,textarea:focus,select:focus{border-color:#555;}
+textarea{resize:vertical;min-height:80px;}
+.btn-primary{background:#eaeef2;color:#000;border:none;padding:0.55rem 1.3rem;font-size:0.85rem;font-weight:500;cursor:pointer;transition:0.2s;}
+.btn-primary:hover{background:#fff;}
+.btn-secondary{background:transparent;border:1px solid #333;color:#9da3ab;padding:0.55rem 1.3rem;font-size:0.85rem;cursor:pointer;transition:0.2s;}
+.btn-secondary:hover{border-color:#666;color:#eaeef2;}
+.btn-danger{background:transparent;border:1px solid #7f1d1d;color:#f87171;padding:0.55rem 1.3rem;font-size:0.85rem;cursor:pointer;transition:0.2s;}
+.btn-danger:hover{background:#7f1d1d;color:#fff;}
+.btn-sm{padding:0.35rem 0.8rem;font-size:0.78rem;}
+.btn-row{display:flex;gap:0.8rem;margin-top:1rem;flex-wrap:wrap;}
+.img-upload-area{border:2px dashed #2a2a2a;padding:2rem;text-align:center;cursor:pointer;transition:0.2s;margin-bottom:1rem;}
+.img-upload-area:hover{border-color:#555;background:#0f0f0f;}
+.img-preview{max-width:200px;max-height:150px;margin:1rem auto;display:block;border:1px solid #1c1c1c;}
+.img-preview-large{max-width:100%;max-height:300px;margin:1rem 0;border:1px solid #1c1c1c;}
+.item-list{display:flex;flex-direction:column;gap:1rem;}
+.item-row{background:#111;border:1px solid #222;padding:1rem 1.2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;}
+.item-info{flex:1;min-width:200px;}
+.item-info strong{display:block;font-weight:500;margin-bottom:0.3rem;}
+.item-info span{font-size:0.8rem;color:#6b727c;}
+.item-actions{display:flex;gap:0.5rem;}
+.empty-state{text-align:center;padding:2rem;color:#5a6068;font-size:0.85rem;}
+.skills-editor{display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem;}
+.skill-tag-edit{display:inline-flex;align-items:center;gap:0.4rem;background:#151515;padding:0.3rem 0.7rem;font-size:0.8rem;border:1px solid #2a2a2a;}
+.skill-tag-edit .remove-skill{cursor:pointer;color:#f87171;font-size:0.9rem;line-height:1;}
+.add-skill-row{display:flex;gap:0.5rem;}
+.add-skill-row input{flex:1;max-width:200px;}
+.works-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+.work-card-edit{background:#111;border:1px solid #222;overflow:hidden;}
+.work-card-edit img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0a0a0a;}
+.work-card-edit .work-info{padding:0.8rem 1rem;}
+.work-card-edit .work-info strong{font-size:0.9rem;display:block;margin-bottom:0.3rem;}
+.work-card-edit .work-info span{font-size:0.75rem;color:#6b727c;}
+.work-card-edit .work-actions{padding:0 1rem 0.8rem;display:flex;gap:0.5rem;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal-box{background:#0a0a0a;border:1px solid #2a2a2a;padding:2rem;max-width:560px;width:90%;max-height:90vh;overflow-y:auto;}
+.modal-box h3{font-size:1.1rem;font-weight:500;margin-bottom:1.2rem;}
+@media(max-width:760px){.admin-content{padding:1rem;}.admin-nav-links{gap:0.1rem;}.admin-nav-links button{padding:0.35rem 0.6rem;font-size:0.78rem;}}
+</style>
+</head>
+<body>
+
+<!-- 登录界面 -->
+<div class="login-screen" id="loginScreen">
+<div class="login-box">
+<h2>后台管理</h2>
+<p>请输入管理密码以继续</p>
+<div class="login-error" id="loginError">密码错误，请重试</div>
+<input type="password" id="loginInput" placeholder="管理密码" onkeydown="if(event.key==='Enter')doLogin()">
+<button onclick="doLogin()">进入后台</button>
+<p style="margin-top:1rem;font-size:0.75rem;color:#444;">默认密码：zgj2025</p>
+</div>
+</div>
+
+<!-- 后台主界面 -->
+<div class="admin-screen" id="adminScreen">
+<nav class="admin-nav">
+<div class="admin-nav-inner">
+<div class="admin-logo">ZGJ.Studio · 后台</div>
+<div class="admin-nav-links">
+<button class="active" onclick="switchSection('banner',this)">Banner</button>
+<button onclick="switchSection('about',this)">关于我</button>
+<button onclick="switchSection('journey',this)">工作历程</button>
+<button onclick="switchSection('portfolio',this)">作品集</button>
+<button onclick="switchSection('journal',this)">设计日志</button>
+<button onclick="switchSection('contact',this)">联系方式</button>
+</div>
+<button class="admin-exit" onclick="doLogout()">退出</button>
+<button class="admin-exit" onclick="window.open('index.html','_blank')">👁 预览主页</button>
+<button class="admin-exit" onclick="checkStorage()">📊 存储诊断</button>
+<button class="admin-exit" onclick="clearAllWorks()">🗑 清理作品集</button>
+</div>
+</nav>
+<div class="admin-content">
+
+<!-- Banner -->
+<div class="admin-section active" id="sec-banner">
+<h2>Banner 管理</h2>
+<div class="admin-card">
+<h3>首页横幅</h3>
+<div class="img-upload-area" id="bannerUploadArea" onclick="document.getElementById('bannerFileInput').click()">
+<div style="font-size:0.85rem;color:#6b727c;">点击上传 Banner 图片</div>
+<img id="bannerPreview" class="img-preview-large" style="display:none;">
+</div>
+<input type="file" id="bannerFileInput" accept="image/*" style="display:none;">
+<div class="form-row">
+<div class="form-group"><label>主标题</label><input type="text" id="bannerTitle"></div>
+<div class="form-group"><label>副标题</label><input type="text" id="bannerSubtitle"></div>
+</div>
+<div class="btn-row"><button class="btn-primary" onclick="saveBanner()">保存 Banner</button><button class="btn-secondary" onclick="removeBannerImage()">移除图片</button></div>
+</div>
+</div>
+
+<!-- 关于我 -->
+<div class="admin-section" id="sec-about">
+<h2>关于我 管理</h2>
+<div class="admin-card">
+<h3>个人简介</h3>
+<div class="form-group" style="margin-bottom:1rem;"><label>简介段落 1</label><textarea id="aboutText1" rows="3"></textarea></div>
+<div class="form-group" style="margin-bottom:1rem;"><label>简介段落 2</label><textarea id="aboutText2" rows="3"></textarea></div>
+<div class="form-group" style="margin-bottom:1rem;"><label>简介段落 3（标签行）</label><input type="text" id="aboutText3"></div>
+</div>
+<div class="admin-card">
+<h3>核心能力标签</h3>
+<div class="skills-editor" id="skillsEditor"></div>
+<div class="add-skill-row"><input type="text" id="newSkillInput" placeholder="新技能名称"><button class="btn-secondary btn-sm" onclick="addSkill()">添加</button></div>
+</div>
+<div class="btn-row"><button class="btn-primary" onclick="saveAbout()">保存</button></div>
+</div>
+
+<!-- 工作历程 -->
+<div class="admin-section" id="sec-journey">
+<h2>工作历程 管理</h2>
+<div class="admin-card">
+<h3>经历列表</h3>
+<div class="item-list" id="journeyList"></div>
+<div class="btn-row"><button class="btn-primary btn-sm" onclick="addJourneyItem()">＋ 新增经历</button></div>
+</div>
+</div>
+
+<!-- 作品集 -->
+<div class="admin-section" id="sec-portfolio">
+<h2>作品集 管理</h2>
+<div class="admin-card">
+<h3>分类封面管理</h3>
+<p style="font-size:0.85rem;color:#6b727c;margin-bottom:1rem;">上传六个作品分类的封面图片，将在主页作品集区域显示。</p>
+<div class="works-list" id="categoryImagesList"></div>
+</div>
+<div class="admin-card" style="margin-top:1.5rem;">
+<h3>所有作品</h3>
+<div class="works-list" id="worksList"></div>
+<div class="btn-row"><button class="btn-primary btn-sm" onclick="addWorkItem()">＋ 新增作品</button></div>
+</div>
+</div>
+
+<!-- 设计日志 -->
+<div class="admin-section" id="sec-journal">
+<h2>设计日志 管理</h2>
+<div class="admin-card">
+<h3>文章列表</h3>
+<div class="item-list" id="journalList"></div>
+<div class="btn-row"><button class="btn-primary btn-sm" onclick="addJournalItem()">＋ 新增文章</button></div>
+</div>
+</div>
+
+<!-- 联系方式 -->
+<div class="admin-section" id="sec-contact">
+<h2>联系方式 管理</h2>
+<div class="admin-card">
+<h3>联系信息</h3>
+<div class="form-row">
+<div class="form-group"><label>邮箱</label><input type="text" id="contactEmail"></div>
+<div class="form-group"><label>电话</label><input type="text" id="contactPhone"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>地址</label><input type="text" id="contactLocation"></div>
+<div class="form-group"><label>备注</label><input type="text" id="contactNote"></div>
+</div>
+<div class="btn-row"><button class="btn-primary" onclick="saveContact()">保存</button></div>
+</div>
+</div>
+
+<div class="admin-card" style="margin-top:1.5rem;">
+<h3>📄 简历文件管理</h3>
+<p style="font-size:0.8rem;color:#6b727c;margin-bottom:1rem;">方案A：上传简历文件（PDF/Word，建议 &lt; 3MB）。方案B：将文件放入 portfolio 文件夹，在下方填写文件名。</p>
+
+<div class="form-group" style="margin-bottom:1rem;">
+<label>方案A：上传简历文件</label>
+<div class="img-upload-area" onclick="document.getElementById('resumeFileInput').click()" style="padding:1.5rem;text-align:center;">
+<div style="font-size:0.85rem;color:#6b727c;">点击上传简历（PDF / DOC / DOCX）</div>
+<div id="resumePreview" style="display:none;margin-top:0.8rem;"><strong id="resumeFilename" style="color:#eaeef2;font-size:0.9rem;"></strong></div>
+</div>
+<input type="file" id="resumeFileInput" accept=".pdf,.doc,.docx,.txt" style="display:none;">
+<div class="btn-row" style="margin-top:0.8rem;"><button class="btn-danger btn-sm" onclick="removeResume()">移除已上传简历</button></div>
+</div>
+
+<div class="form-group" style="margin-bottom:1rem;">
+<label>方案B：外部文件（放入 portfolio 文件夹）</label>
+<input type="text" id="resumeExternalName" placeholder="例如：祝光军_简历.pdf" style="margin-bottom:0.5rem;">
+<div class="btn-row"><button class="btn-secondary btn-sm" onclick="saveResumeFilename()">保存文件名</button></div>
+</div>
+</div>
+
+</div><!-- /admin-content -->
+</div><!-- /admin-screen -->
+
+<!-- 工作历程编辑弹窗 -->
+<div class="modal-overlay" id="journeyEditorModal">
+<div class="modal-box">
+<h3>编辑工作经历</h3>
+<input type="hidden" id="editJourneyId">
+<div class="form-group" style="margin-bottom:0.8rem;"><label>时间区间</label><input type="text" id="editJourneyPeriod"></div>
+<div class="form-group" style="margin-bottom:0.8rem;"><label>公司名称</label><input type="text" id="editJourneyCompany"></div>
+<div class="form-group" style="margin-bottom:0.8rem;"><label>职位</label><input type="text" id="editJourneyRole"></div>
+<div class="form-group" style="margin-bottom:1rem;"><label>工作描述</label><textarea id="editJourneyDesc" rows="4"></textarea></div>
+<div class="btn-row">
+<button class="btn-primary" onclick="saveJourneyItem()">保存</button>
+<button class="btn-secondary" onclick="closeJourneyEditor()">取消</button>
+<button class="btn-danger btn-sm" id="deleteJourneyBtn" style="margin-left:auto;" onclick="deleteJourneyItem()">删除</button>
+</div>
+</div>
+</div>
+
+<!-- 作品编辑弹窗 -->
+<div class="modal-overlay" id="workEditorModal">
+<div class="modal-box">
+<h3>编辑作品</h3>
+<input type="hidden" id="editWorkId">
+<div class="form-group" style="margin-bottom:0.8rem;"><label>作品标题</label><input type="text" id="editWorkTitle"></div>
+<div class="form-group" style="margin-bottom:0.8rem;"><label>所属分类</label>
+<select id="editWorkCategory">
+<option value="品牌视觉">品牌视觉</option>
+<option value="UI/UX设计">UI/UX设计</option>
+<option value="平面印刷">平面印刷</option>
+<option value="运营设计">运营设计</option>
+<option value="PPT视觉">PPT视觉</option>
+<option value="其他设计">其他设计</option>
+</select>
+</div>
+<div class="form-group" style="margin-bottom:0.8rem;"><label>作品描述</label><textarea id="editWorkDesc" rows="3"></textarea></div>
+<div class="form-group" style="margin-bottom:1rem;">
+<label>作品图片</label>
+<div class="img-upload-area" onclick="document.getElementById('workImageInput').click()" style="padding:1.2rem;">
+<div style="font-size:0.8rem;color:#6b727c;">点击上传作品图片</div>
+<img id="workImagePreview" class="img-preview" style="display:none;">
+</div>
+<input type="file" id="workImageInput" accept="image/*" style="display:none;">
+</div>
+<div class="btn-row">
+<button class="btn-primary" onclick="saveWorkItem()">保存</button>
+<button class="btn-secondary" onclick="closeWorkEditor()">取消</button>
+<button class="btn-danger btn-sm" id="deleteWorkBtn" style="margin-left:auto;" onclick="deleteWorkItem()">删除</button>
+</div>
+</div>
+</div>
+
+<!-- 日志编辑弹窗 -->
+<div class="modal-overlay" id="journalEditorModal">
+<div class="modal-box">
+<h3>编辑日志文章</h3>
+<input type="hidden" id="editJournalId">
+<div class="form-row">
+<div class="form-group" style="flex:2;"><label>文章标题</label><input type="text" id="editJournalTitle"></div>
+<div class="form-group" style="max-width:180px;"><label>日期</label><input type="text" id="editJournalDate" placeholder="2025.01.15"></div>
+</div>
+<div class="form-group" style="margin-bottom:0.8rem;">
+<label>分类</label>
+<select id="editJournalCategory">
+<option value="设计思考">设计思考</option>
+<option value="技术探索">技术探索</option>
+<option value="行业观察">行业观察</option>
+<option value="案例复盘">案例复盘</option>
+</select>
+</div>
+<div class="form-group" style="margin-bottom:1rem;">
+<label>文章内容（支持 HTML 标签）</label>
+<textarea id="editJournalContent" rows="10" style="font-family:'SF Mono',Monaco,monospace;font-size:0.82rem;line-height:1.7;"></textarea>
+</div>
+<div class="btn-row">
+<button class="btn-primary" onclick="saveJournalItem()">保存</button>
+<button class="btn-secondary" onclick="closeJournalEditor()">取消</button>
+<button class="btn-danger btn-sm" id="deleteJournalBtn" style="margin-left:auto;" onclick="deleteJournalItem()">删除</button>
+</div>
+</div>
+</div>
+
+<script>
+/* ===== IndexedDB 存储层（替代 localStorage 存大文件）===== */
+var DB_NAME='PortfolioDB',DB_VER=1,_db=null;
+function openDB(callback){
+    if(_db){callback(_db);return;}
+    var req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=function(e){var db=e.target.result;
+        if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});
+        if(!db.objectStoreNames.contains('data'))db.createObjectStore('data',{keyPath:'id'});
+    };
+    req.onsuccess=function(e){_db=e.target.result;callback(_db);};
+    req.onerror=function(){console.error('IndexedDB 打开失败');callback(null);};
+}
+function dbGet(store,key,callback){
+    openDB(function(db){
+        if(!db){callback(null);return;}
+        var tx=db.transaction(store,'readonly'),s=tx.objectStore(store);
+        var req=s.get(key);
+        req.onsuccess=function(e){callback(e.target.result?e.target.result.value:null);};
+        req.onerror=function(){callback(null);};
+    });
+}
+function dbSet(store,key,value,callback){
+    openDB(function(db){
+        if(!db){callback(false);return;}
+        var tx=db.transaction(store,'readwrite'),s=tx.objectStore(store);
+        var req=s.put({id:key,value:value});
+        req.onsuccess=function(){if(callback)callback(true);};
+        req.onerror=function(){if(callback)callback(false);};
+    });
+}
+function dbRemove(store,key,callback){
+    openDB(function(db){
+        if(!db){callback(false);return;}
+        var tx=db.transaction(store,'readwrite'),s=tx.objectStore(store);
+        var req=s.delete(key);
+        req.onsuccess=function(){if(callback)callback(true);};
+        req.onerror=function(){if(callback)callback(false);};
+    });
+}
+/* localStorage 包装（小数据继续用 localStorage） */
+function getStore(key,defaultVal){
+    try{var v=localStorage.getItem(key);return v?JSON.parse(v):defaultVal;}catch(e){return defaultVal;}
+}
+function setStore(key,val){localStorage.setItem(key,JSON.stringify(val));}
+
+/* ===== 配置 ===== */
+const ADMIN_PASS = "zgj2025";
+const BANNER_KEY = "zgj_banner_image";
+const ABOUT_KEY = "zgj_about_data_v2";
+const CAREER_KEY = "zgj_career_timeline";
+const WORKS_KEY = "zgj_portfolio_works_v2";
+const JOURNAL_KEY = "zgj_portfolio_journal_v2";
+const CONTACT_KEY = "zgj_contact_data_v2";
+const CATEGORIES = [
+{ id:'brand', name:'品牌视觉', imageKey:'cat_brand', color:'#1e6fd9' },
+{ id:'ui', name:'UI/UX设计', imageKey:'cat_ui', color:'#10b981' },
+{ id:'print', name:'平面印刷', imageKey:'cat_print', color:'#f59e0b' },
+{ id:'operation', name:'运营设计', imageKey:'cat_operation', color:'#ec4899' },
+{ id:'ppt', name:'PPT视觉', imageKey:'cat_ppt', color:'#8b5cf6' },
+{ id:'other', name:'其他设计', imageKey:'cat_other', color:'#6b7280' }
+];
+
+/* ===== 工具 ===== */
+function esc(s){if(!s)return'';return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function makeSVG(title){
+    var t=(title||'作品图片').replace(/[&<>"]/g,'');
+    var svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect width="400" height="300" fill="#131313"/><text x="200" y="150" text-anchor="middle" fill="#6b727c" font-size="14" font-family="sans-serif">'+t+'</text></svg>';
+    try{return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));}catch(e){return '';}
+}
+function compressImage(dataURL,maxWidth,maxSizeKB,quality,callback){
+    var img=new Image();
+    img.onload=function(){
+        var w=img.width,h=img.height;
+        var origW=w,origH=h;
+        /* 尺寸压缩：先缩小到目标宽度的2倍 */
+        var stepW=maxWidth*2;
+        if(w>stepW){h=Math.round(h*stepW/w);w=stepW;}
+        var canvas=document.createElement('canvas');
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        var result=canvas.toDataURL('image/jpeg',quality);
+        var sizeKB=Math.round(result.length*3/4/1024);
+        console.log('压缩：'+origW+'x'+origH+' -> '+w+'x'+h+' 质量:'+quality+' 大小:'+sizeKB+'KB');
+        /* 如果还是太大，降低质量继续压 */
+        if(sizeKB>maxSizeKB&&quality>0.25){
+            compressImage(dataURL,maxWidth,maxSizeKB,quality-0.15,callback);
+        /* 如果质量已最低，缩小尺寸再压 */
+        }else if(sizeKB>maxSizeKB&&w>400){
+            compressImage(dataURL,maxWidth,maxSizeKB,0.7,callback);
+        }else{
+            if(sizeKB>maxSizeKB){
+                console.warn('警告：压缩后仍有'+sizeKB+'KB，可能无法保存');
+            }
+            callback(result,sizeKB);
+        }
+    };
+    img.onerror=function(){callback(dataURL,0);console.error('图片加载失败');};
+    img.src=dataURL;
+}
+function checkStorage(){
+    var total=0,items={};
+    var keys=['zgj_banner_image','zgj_about_data_v2','zgj_career_timeline','zgj_portfolio_works_v2','zgj_portfolio_journal_v2','zgj_contact_data_v2','zgj_resume_file','zgj_banner_text'];
+    keys.forEach(function(k){
+        var v=localStorage.getItem(k)||'';
+        var sizeKB=Math.round(v.length*3/4/1024);
+        items[k]={approx:sizeKB+'KB'};
+        total+=v.length;
+    });
+    var totalMB=(total/1024/1024).toFixed(2);
+    var limitMB=5;
+    var pct=(total/1024/1024/limitMB*100).toFixed(1);
+    var msg='📊 localStorage 使用情况：\n\n总使用量：约 '+totalMB+' MB / '+limitMB+' MB ('+pct+'%)\n\n各项目：\n';
+    keys.forEach(function(k){
+        msg+=k.replace('zgj_','')+': '+items[k].approx+'\n';
+    });
+    msg+='\n如接近 5MB，建议清理旧数据。';
+    alert(msg);
+}
+function clearAllWorks(){
+    if(!confirm('确认清空所有作品图片，恢复为默认占位图标？\n\n此操作会释放约 3.6MB 存储空间，\n原有作品标题和描述会保留。'))return;
+    try{
+        var stored=localStorage.getItem(WORKS_KEY);
+        if(stored){
+            var arr=JSON.parse(stored);
+            arr.forEach(function(w){w.imageData=makeSVG(w.title||'作品图片');});
+            localStorage.setItem(WORKS_KEY,JSON.stringify(arr));
+            alert('✅ 已清理！释放约 3.5MB 空间。\n\n现在可以重新上传图片了。');
+            loadWorksData();
+        }else{
+            alert('当前没有作品数据可清理。');
+        }
+    }catch(e){alert('清理失败：'+e.message);}
+}
+
+/* ===== 登录 ===== */
+function doLogin(){
+    var pwd=document.getElementById('loginInput').value;
+    if(pwd===ADMIN_PASS){
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('adminScreen').classList.add('active');
+        document.getElementById('loginInput').value='';
+        document.getElementById('loginError').style.display='none';
+        loadAllData();
+    }else{
+        document.getElementById('loginError').style.display='block';
+    }
+}
+function doLogout(){
+    document.getElementById('adminScreen').classList.remove('active');
+    document.getElementById('loginScreen').style.display='flex';
+}
+
+/* ===== 导航 ===== */
+function switchSection(name,btn){
+    document.querySelectorAll('.admin-section').forEach(function(s){s.classList.remove('active');});
+    document.querySelectorAll('.admin-nav-links button').forEach(function(b){b.classList.remove('active');});
+    document.getElementById('sec-'+name).classList.add('active');
+    if(btn)btn.classList.add('active');
+}
+
+/* ===== 加载所有数据 ===== */
+function loadAllData(){
+    loadBannerData();
+    loadAboutData();
+    loadJourneyData();
+    loadCategoryImages();  // 加载分类封面
+    loadWorksData();
+    loadJournalData();
+    loadContactData();
+}
+
+/* ===== Banner ===== */
+function loadBannerData(){
+    try{
+        var stored=localStorage.getItem(BANNER_KEY);
+        if(stored && stored.startsWith('data:image')){
+            var preview=document.getElementById('bannerPreview');
+            preview.src=stored;
+            preview.style.display='block';
+        }
+    }catch(e){}
+    try{
+        var d=JSON.parse(localStorage.getItem('zgj_banner_text')||'{}');
+        document.getElementById('bannerTitle').value=d.title||'视觉叙事 · 极简表达';
+        document.getElementById('bannerSubtitle').value=d.subtitle||'17年经验平面设计师 | 品牌 / UI / 印刷物 / 3D视觉';
+    }catch(e){}
+}
+document.getElementById('bannerFileInput').addEventListener('change',function(){
+    var file=this.files[0];if(!file)return;
+    if(file.size>30*1024*1024){alert('图片过大（>30MB）！');this.value='';return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+        compressImage(e.target.result,1920,600,0.85,function(compressedDataURL){
+            var preview=document.getElementById('bannerPreview');
+            preview.src=compressedDataURL;
+            preview.style.display='block';
+        });
+    };
+    reader.readAsDataURL(file);
+});
+function saveBanner(){
+    var textData={title:document.getElementById('bannerTitle').value,subtitle:document.getElementById('bannerSubtitle').value};
+    localStorage.setItem('zgj_banner_text',JSON.stringify(textData));
+    var preview=document.getElementById('bannerPreview');
+    if(preview.style.display!=='none'&&preview.src.startsWith('data:image')){
+        localStorage.setItem(BANNER_KEY,preview.src);
+    }
+    alert('Banner 设置已保存！');
+}
+function removeBannerImage(){
+    localStorage.removeItem(BANNER_KEY);
+    document.getElementById('bannerPreview').style.display='none';
+    alert('Banner 图片已移除');
+}
+
+/* ===== 关于我 ===== */
+var _skills=['PS / AI','XD / Figma','AE / C4D','品牌VI','UI/UX','印刷工艺','视频剪辑','3D渲染','创意策划'];
+function loadAboutData(){
+    try{
+        var d=JSON.parse(localStorage.getItem(ABOUT_KEY)||'{}');
+        document.getElementById('aboutText1').value=d.text1||'祝光军，资深平面设计师，17年设计行业深耕经验，曾服务于物联科技、品牌策划、数码商业及印刷领域。具备全案设计思维与项目落地能力，擅长品牌VI、UI界面、新媒体视觉、三维渲染与视频剪辑。';
+        document.getElementById('aboutText2').value=d.text2||'拥抱新技术与AI工具，独立完成从创意企划到印刷/上线执行。相信极简主义能传递更深层的品牌力量。';
+        document.getElementById('aboutText3').value=d.text3||'厦门 | 全案视觉 | 设计管理';
+        if(d.skills)_skills=d.skills;
+    }catch(e){}
+    renderSkillsEditor();
+}
+function renderSkillsEditor(){
+    var container=document.getElementById('skillsEditor');
+    container.innerHTML='';
+    _skills.forEach(function(s,i){
+        var tag=document.createElement('span');
+        tag.className='skill-tag-edit';
+        tag.innerHTML=esc(s)+'<span class="remove-skill" onclick="removeSkill('+i+')">×</span>';
+        container.appendChild(tag);
+    });
+}
+function removeSkill(idx){
+    _skills.splice(idx,1);
+    renderSkillsEditor();
+}
+function addSkill(){
+    var input=document.getElementById('newSkillInput');
+    var val=input.value.trim();
+    if(!val)return;
+    _skills.push(val);
+    renderSkillsEditor();
+    input.value='';
+}
+function saveAbout(){
+    var data={text1:document.getElementById('aboutText1').value,text2:document.getElementById('aboutText2').value,text3:document.getElementById('aboutText3').value,skills:_skills};
+    localStorage.setItem(ABOUT_KEY,JSON.stringify(data));
+    alert('关于我 已保存！');
+}
+
+/* ===== 工作历程 ===== */
+var _journeyData=[];
+function loadJourneyData(){
+    try{
+        var stored=localStorage.getItem(CAREER_KEY);
+        if(stored){_journeyData=JSON.parse(stored);}
+        else{_journeyData=getDefaultCareer();}
+    }catch(e){_journeyData=getDefaultCareer();}
+    renderJourneyList();
+}
+function getDefaultCareer(){return[
+    {id:'exp1',period:'2022.11 - 2025.12',company:'智慧谷（厦门）物联科技',role:'平面设计',desc:'负责品牌VI升级、运营设计、UI协作与视频剪辑，独立完成品牌全案视觉输出。'},
+    {id:'exp2',period:'2018.08 - 2022.11',company:'厦门艾欧特科技有限公司',role:'资深设计',desc:'负责品牌视觉、新媒体运营、B端UI（移动端/Web/大屏），展会视觉规划落地。'},
+    {id:'exp3',period:'2016.06 - 2018.08',company:'厦门美锐品牌策划有限公司',role:'平面设计',desc:'协同品牌全案设计，完成VI、包装、画册及运营广告，对接甲方高效落地。'},
+    {id:'exp4',period:'2010.12 - 2016.06',company:'厦门赛博数码广场有限公司',role:'平面设计',desc:'负责商场美陈、促销活动视觉物料设计及制作，熟悉线下广告规范，节约成本。'},
+    {id:'exp5',period:'2009.09 - 2010.10',company:'福州华鑫印刷有限公司',role:'平面设计',desc:'负责印刷文件排版、拼版及跟单，精通印刷材质与工艺流程。'}
+];}
+function renderJourneyList(){
+    var container=document.getElementById('journeyList');
+    if(!_journeyData.length){container.innerHTML='<div class="empty-state">暂无工作经历，点击上方按钮添加</div>';return;}
+    container.innerHTML='';
+    _journeyData.forEach(function(item,i){
+        var row=document.createElement('div');
+        row.className='item-row';
+        row.innerHTML='<div class="item-info"><strong>'+esc(item.company)+'</strong><span>'+esc(item.period)+' | '+esc(item.role)+'</span></div>'
+            +'<div class="item-actions"><button class="btn-secondary btn-sm" onclick="editJourneyItem('+i+')">编辑</button><button class="btn-danger btn-sm" onclick="removeJourneyItem('+i+')">删除</button></div>';
+        container.appendChild(row);
+    });
+}
+function addJourneyItem(){
+    _journeyData.push({id:'exp_'+Date.now(),period:new Date().getFullYear()+'.01 - 至今',company:'新公司名称',role:'职位',desc:'工作描述'});
+    renderJourneyList();
+    editJourneyItem(_journeyData.length-1);
+}
+function editJourneyItem(idx){
+    var item=_journeyData[idx];
+    document.getElementById('editJourneyId').value=idx;
+    document.getElementById('editJourneyPeriod').value=item.period;
+    document.getElementById('editJourneyCompany').value=item.company;
+    document.getElementById('editJourneyRole').value=item.role;
+    document.getElementById('editJourneyDesc').value=item.desc;
+    document.getElementById('deleteJourneyBtn').style.display='block';
+    document.getElementById('journeyEditorModal').classList.add('active');
+}
+function saveJourneyItem(){
+    var idx=parseInt(document.getElementById('editJourneyId').value);
+    var item=idx>=0?_journeyData[idx]:{id:'exp_'+Date.now()};
+    item.period=document.getElementById('editJourneyPeriod').value;
+    item.company=document.getElementById('editJourneyCompany').value;
+    item.role=document.getElementById('editJourneyRole').value;
+    item.desc=document.getElementById('editJourneyDesc').value;
+    if(idx<0)_journeyData.push(item);
+    localStorage.setItem(CAREER_KEY,JSON.stringify(_journeyData));
+    renderJourneyList();
+    closeJourneyEditor();
+}
+function removeJourneyItem(idx){
+    _journeyData.splice(idx,1);
+    renderJourneyList();
+    localStorage.setItem(CAREER_KEY,JSON.stringify(_journeyData));
+}
+function deleteJourneyItem(){
+    if(!confirm('确认删除该工作经历？'))return;
+    var idx=parseInt(document.getElementById('editJourneyId').value);
+    if(idx>=0){_journeyData.splice(idx,1);localStorage.setItem(CAREER_KEY,JSON.stringify(_journeyData));}
+    renderJourneyList();
+    closeJourneyEditor();
+}
+function closeJourneyEditor(){document.getElementById('journeyEditorModal').classList.remove('active');}
+
+/* ===== 分类封面管理 ===== */
+var _categoryImages={};  // 存储分类图片数据
+
+function loadCategoryImages(){
+    var loaded=0;
+    CATEGORIES.forEach(function(cat){
+        dbGet('data',cat.imageKey,function(val){
+            if(val)_categoryImages[cat.id]=val;
+            loaded++;
+            if(loaded===CATEGORIES.length)renderCategoryImagesList();
+        });
+    });
+}
+
+function renderCategoryImagesList(){
+    var container=document.getElementById('categoryImagesList');
+    if(!container)return;
+    container.innerHTML='';
+    CATEGORIES.forEach(function(cat,i){
+        var card=document.createElement('div');
+        card.className='work-card-edit';
+        var imgSrc=_categoryImages[cat.id]||'';
+        card.innerHTML='<div style="height:140px;background:'+cat.color+';display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;" onclick="document.getElementById(\'catImgInput_'+cat.id+'\').click()">'
+            +(imgSrc?'<img src="'+esc(imgSrc)+'" style="width:100%;height:100%;object-fit:cover;">':'<span style="color:#fff;opacity:0.5;font-size:0.85rem;">点击上传封面</span>')
+            +'</div>'
+            +'<div class="work-info"><strong>'+esc(cat.name)+'</strong><span>'+cat.id+'</span></div>'
+            +'<div class="work-actions"><button class="btn-secondary btn-sm" onclick="removeCategoryImage(\''+cat.id+'\')">移除</button></div>'
+            +'<input type="file" id="catImgInput_'+cat.id+'" accept="image/*" style="display:none;" onchange="handleCategoryImageUpload(\''+cat.id+'\',this)">';
+        container.appendChild(card);
+    });
+}
+
+function handleCategoryImageUpload(catId,input){
+    var file=input.files[0];if(!file)return;
+    if(file.size>30*1024*1024){alert('图片过大（>30MB）！');input.value='';return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+        compressImage(e.target.result,800,300,0.8,function(compressedDataURL,sizeKB){
+            _categoryImages[catId]=compressedDataURL;
+            dbSet('data',CATEGORIES.find(c=>c.id===catId).imageKey,compressedDataURL,function(ok){
+                if(ok){
+                    renderCategoryImagesList();
+                    alert(catId+' 封面已保存！');
+                }else{
+                    alert('保存失败，请检查浏览器设置。');
+                }
+            });
+        });
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeCategoryImage(catId){
+    if(!confirm('确认移除 '+catId+' 的分类封面？'))return;
+    delete _categoryImages[catId];
+    dbRemove('data',CATEGORIES.find(c=>c.id===catId).imageKey,function(){
+        renderCategoryImagesList();
+        alert('封面已移除');
+    });
+}
+
+/* ===== 作品集（使用 IndexedDB 存储，突破 5MB 限制）===== */
+var _worksData=[];
+function loadWorksData(){
+    dbGet('data',WORKS_KEY,function(val){
+        if(val){_worksData=val;}
+        else{_worksData=getDefaultWorks();saveWorksData();}
+        renderWorksList();
+    });
+}
+function saveWorksData(callback){
+    dbSet('data',WORKS_KEY,_worksData,function(ok){
+        if(callback)callback(ok);
+        if(!ok)alert('⚠️ 保存失败，请检查浏览器存储设置');
+    });
+}
+function getDefaultWorks(){return[
+    {id:'w1',title:'智慧谷品牌VI升级',category:'品牌视觉',desc:'全套品牌视觉识别系统',imageData:makeSVG('智慧谷品牌VI升级')},
+    {id:'w2',title:'艾欧特品牌重塑',category:'品牌视觉',desc:'科技公司品牌形象设计',imageData:makeSVG('艾欧特品牌重塑')},
+    {id:'w3',title:'美锐品牌标识',category:'品牌视觉',desc:'品牌策划公司标志设计',imageData:makeSVG('美锐品牌标识')},
+    {id:'w4',title:'智慧环卫平台UI',category:'UI/UX设计',desc:'B端数据可视化界面',imageData:makeSVG('智慧环卫平台UI')},
+    {id:'w5',title:'移动端APP设计',category:'UI/UX设计',desc:'iOS/Android双端适配',imageData:makeSVG('移动端APP设计')},
+    {id:'w6',title:'企业宣传画册',category:'平面印刷',desc:'16P精装画册设计',imageData:makeSVG('企业宣传画册')},
+    {id:'w7',title:'产品包装设计',category:'平面印刷',desc:'系列包装视觉方案',imageData:makeSVG('产品包装设计')},
+    {id:'w8',title:'电商主图设计',category:'运营设计',desc:'天猫/京东主图套图',imageData:makeSVG('电商主图设计')},
+    {id:'w9',title:'商业提案PPT',category:'PPT视觉',desc:'企业级演示方案',imageData:makeSVG('商业提案PPT')},
+    {id:'w10',title:'3D渲染海报',category:'其他设计',desc:'C4D创意视觉',imageData:makeSVG('3D渲染海报')}
+];}
+function renderWorksList(){
+    var container=document.getElementById('worksList');
+    if(!_worksData.length){container.innerHTML='<div class="empty-state" style="grid-column:1/-1;">暂无作品，点击上方按钮添加</div>';return;}
+    container.innerHTML='';
+    _worksData.forEach(function(work,i){
+        var card=document.createElement('div');
+        card.className='work-card-edit';
+        var imgSrc=work.imageData||'';
+        card.innerHTML='<img src="'+esc(imgSrc)+'" onerror="this.style.background=\'#111\';this.alt=\'暂无图片\'">'
+            +'<div class="work-info"><strong>'+esc(work.title)+'</strong><span>'+esc(work.category)+' · '+(work.desc?esc(work.desc):'')+'</span></div>'
+            +'<div class="work-actions"><button class="btn-secondary btn-sm" onclick="editWorkItem('+i+')">编辑</button><button class="btn-danger btn-sm" onclick="removeWorkItem('+i+')">删除</button></div>';
+        container.appendChild(card);
+    });
+}
+function addWorkItem(){
+    _worksData.push({id:'w_'+Date.now(),title:'新作品',category:'品牌视觉',desc:'作品描述',imageData:''});
+    renderWorksList();
+    editWorkItem(_worksData.length-1);
+}
+function editWorkItem(idx){
+    var work=_worksData[idx];
+    document.getElementById('editWorkId').value=idx;
+    document.getElementById('editWorkTitle').value=work.title;
+    document.getElementById('editWorkCategory').value=work.category;
+    document.getElementById('editWorkDesc').value=work.desc||'';
+    var preview=document.getElementById('workImagePreview');
+    if(work.imageData){preview.src=work.imageData;preview.style.display='block';}
+    else{preview.style.display='none';}
+    document.getElementById('deleteWorkBtn').style.display='block';
+    document.getElementById('workEditorModal').classList.add('active');
+}
+document.getElementById('workImageInput').addEventListener('change',function(){
+    var file=this.files[0];if(!file)return;
+    if(file.size>30*1024*1024){alert('图片过大（>30MB）！请压缩后再上传。');this.value='';return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+        compressImage(e.target.result,1200,400,0.8,function(compressedDataURL,sizeKB){
+            var preview=document.getElementById('workImagePreview');
+            preview.src=compressedDataURL;
+            preview.style.display='block';
+            if(sizeKB>0)console.log('压缩后约 '+sizeKB+'KB');
+        });
+    };
+    reader.readAsDataURL(file);
+});
+function saveWorkItem(){
+    try{
+        var idx=parseInt(document.getElementById('editWorkId').value);
+        if(isNaN(idx)){alert('错误：无法获取作品索引');return;}
+        var work=idx>=0?_worksData[idx]:{id:'w_'+Date.now()};
+        work.title=document.getElementById('editWorkTitle').value.trim();
+        work.category=document.getElementById('editWorkCategory').value;
+        work.desc=document.getElementById('editWorkDesc').value.trim();
+        var preview=document.getElementById('workImagePreview');
+        if(preview.style.display!=='none'&&preview.src&&preview.src.indexOf('data:')===0){work.imageData=preview.src;}
+        if(idx<0)_worksData.push(work);
+        saveWorksData(function(ok){
+            if(ok){
+                renderWorksList();
+                closeWorkEditor();
+                alert('作品已保存！');
+            }
+        });
+    }catch(e){
+        alert('保存失败：'+e.message);
+    }
+}
+function removeWorkItem(idx){
+    _worksData.splice(idx,1);
+    saveWorksData();
+    renderWorksList();
+}
+function deleteWorkItem(){
+    if(!confirm('确认删除该作品？'))return;
+    var idx=parseInt(document.getElementById('editWorkId').value);
+    if(idx>=0){_worksData.splice(idx,1);saveWorksData();}
+    renderWorksList();
+    closeWorkEditor();
+}
+function closeWorkEditor(){document.getElementById('workEditorModal').classList.remove('active');}
+
+/* ===== 设计日志 ===== */
+var _journalData=[];
+function loadJournalData(){
+    try{
+        var stored=localStorage.getItem(JOURNAL_KEY);
+        if(stored){_journalData=JSON.parse(stored);}
+        else{_journalData=getDefaultJournal();}
+    }catch(e){_journalData=getDefaultJournal();}
+    renderJournalList();
+}
+function getDefaultJournal(){return[
+    {id:'journal1',category:'设计思考',title:'极简主义版式新思考',date:'2025.01.15',content:'<p>在最近的企业画册设计中，我重新审视了极简主义的版式应用。</p>'},
+    {id:'journal2',category:'技术探索',title:'C4D动态视觉趋势',date:'2024.12.20',content:'<p>今年下半年开始，我系统地学习了Cinema 4D和OC渲染器。</p>'}
+];}
+function renderJournalList(){
+    var container=document.getElementById('journalList');
+    if(!_journalData.length){container.innerHTML='<div class="empty-state">暂无文章，点击上方按钮添加</div>';return;}
+    container.innerHTML='';
+    _journalData.forEach(function(item,i){
+        var row=document.createElement('div');
+        row.className='item-row';
+        row.innerHTML='<div class="item-info"><strong>'+esc(item.title)+'</strong><span>'+esc(item.category)+' | '+esc(item.date)+'</span></div>'
+            +'<div class="item-actions"><button class="btn-secondary btn-sm" onclick="editJournalItem('+i+')">编辑</button><button class="btn-danger btn-sm" onclick="removeJournalItem('+i+')">删除</button></div>';
+        container.appendChild(row);
+    });
+}
+function addJournalItem(){
+    _journalData.push({id:'journal_'+Date.now(),category:'设计思考',title:'新文章标题',date:new Date().getFullYear()+'.01.01',content:'<p>文章内容</p>'});
+    renderJournalList();
+    editJournalItem(_journalData.length-1);
+}
+function editJournalItem(idx){
+    var item=_journalData[idx];
+    document.getElementById('editJournalId').value=idx;
+    document.getElementById('editJournalTitle').value=item.title;
+    document.getElementById('editJournalDate').value=item.date;
+    document.getElementById('editJournalCategory').value=item.category;
+    document.getElementById('editJournalContent').value=item.content||'';
+    document.getElementById('deleteJournalBtn').style.display='block';
+    document.getElementById('journalEditorModal').classList.add('active');
+}
+function saveJournalItem(){
+    var idx=parseInt(document.getElementById('editJournalId').value);
+    var item=idx>=0?_journalData[idx]:{id:'journal_'+Date.now()};
+    item.title=document.getElementById('editJournalTitle').value;
+    item.date=document.getElementById('editJournalDate').value;
+    item.category=document.getElementById('editJournalCategory').value;
+    item.content=document.getElementById('editJournalContent').value;
+    if(idx<0)_journalData.push(item);
+    localStorage.setItem(JOURNAL_KEY,JSON.stringify(_journalData));
+    renderJournalList();
+    closeJournalEditor();
+}
+function removeJournalItem(idx){
+    _journalData.splice(idx,1);
+    renderJournalList();
+    localStorage.setItem(JOURNAL_KEY,JSON.stringify(_journalData));
+}
+function deleteJournalItem(){
+    if(!confirm('确认删除该文章？'))return;
+    var idx=parseInt(document.getElementById('editJournalId').value);
+    if(idx>=0){_journalData.splice(idx,1);localStorage.setItem(JOURNAL_KEY,JSON.stringify(_journalData));}
+    renderJournalList();
+    closeJournalEditor();
+}
+function closeJournalEditor(){document.getElementById('journalEditorModal').classList.remove('active');}
+
+/* ===== 联系方式 ===== */
+function loadContactData(){
+    try{
+        var d=JSON.parse(localStorage.getItem(CONTACT_KEY)||'{}');
+        document.getElementById('contactEmail').value=d.email||'872408005@qq.com';
+        document.getElementById('contactPhone').value=d.phone||'18605022848';
+        document.getElementById('contactLocation').value=d.location||'中国 · 厦门';
+        document.getElementById('contactNote').value=d.note||'商务合作 / 设计委托';
+    }catch(e){}
+    loadResumeData();
+}
+function saveContact(){
+    var data={email:document.getElementById('contactEmail').value,phone:document.getElementById('contactPhone').value,location:document.getElementById('contactLocation').value,note:document.getElementById('contactNote').value};
+    localStorage.setItem(CONTACT_KEY,JSON.stringify(data));
+    alert('联系方式已保存！');
+}
+
+/* ===== 简历上传（使用 IndexedDB 存储，突破 5MB 限制）===== */
+const RESUME_KEY = "zgj_resume_file";
+const RESUME_NAME_KEY = "zgj_resume_filename";
+
+function loadResumeData(){
+    try{
+        var filename=localStorage.getItem(RESUME_NAME_KEY)||'';
+        var preview=document.getElementById('resumePreview');
+        if(filename){
+            document.getElementById('resumeFilename').textContent=filename;
+            preview.style.display='block';
+        }else{
+            preview.style.display='none';
+        }
+    }catch(e){}
+    /* 尝试从 IndexedDB 加载简历文件 */
+    dbGet('files',RESUME_KEY,function(val){
+        if(val){localStorage.setItem(RESUME_NAME_KEY,val.name||'简历文件');}
+    });
+}
+
+document.getElementById('resumeFileInput').addEventListener('change',function(){
+    var file=this.files[0];if(!file)return;
+    if(file.size>100*1024*1024){alert('文件过大（>100MB）！');this.value='';return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+        dbSet('files',RESUME_KEY,{data:e.target.result,name:file.name},function(ok){
+            if(ok){
+                localStorage.setItem(RESUME_NAME_KEY,file.name);
+                document.getElementById('resumeFilename').textContent=file.name;
+                document.getElementById('resumePreview').style.display='block';
+                alert('简历已上传并保存！');
+            }else{
+                alert('存储失败，请检查浏览器设置。');
+            }
+            document.getElementById('resumeFileInput').value='';
+        });
+    };
+    reader.readAsDataURL(file);
+});
+
+function removeResume(){
+    if(!confirm('确认移除已上传的简历？'))return;
+    dbRemove('files',RESUME_KEY,function(){
+        localStorage.removeItem(RESUME_NAME_KEY);
+        document.getElementById('resumePreview').style.display='none';
+        document.getElementById('resumeFileInput').value='';
+        alert('简历已移除');
+    });
+}
+
+/* ===== 方案B：外部文件 ===== */
+function saveResumeFilename(){
+    var fname=document.getElementById('resumeExternalName').value.trim();
+    if(!fname){alert('请输入文件名');return;}
+    localStorage.setItem(RESUME_NAME_KEY,fname);
+    alert('文件名已保存！首页将直接下载 '+fname);
+}
+
+/* ===== 清理功能 ===== */
+function clearAllWorks(){
+    if(!confirm('确认清空所有作品图片，恢复为默认占位图标？\n\n此操作会释放大量存储空间，\n原有作品标题和描述会保留。'))return;
+    try{
+        dbGet('data',WORKS_KEY,function(arr){
+            if(arr){
+                arr.forEach(function(w){w.imageData=makeSVG(w.title||'作品图片');});
+                dbSet('data',WORKS_KEY,arr,function(){
+                    alert('✅ 已清理！\n\n现在可以重新上传图片了。');
+                    loadWorksData();
+                });
+            }else{
+                alert('当前没有作品数据可清理。');
+            }
+        });
+    }catch(e){alert('清理失败：'+e.message);}
+}
+</script>
+</body>
+</html>
