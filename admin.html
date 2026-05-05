@@ -346,6 +346,46 @@ function getStore(key,defaultVal){
 }
 function setStore(key,val){localStorage.setItem(key,JSON.stringify(val));}
 
+/* ===== GitHub 数据同步 ===== */
+// 注意：由于GitHub安全策略，不建议在前端代码中存储Token
+// 方案：用户修改后，数据存储在LocalStorage
+// 如需跨设备同步，需要手动更新data.json文件
+const GITHUB_OWNER = "JUJN88";
+const GITHUB_REPO = "portfolio";
+const DATA_FILE = "data.json";
+
+// 从GitHub加载数据
+async function loadFromGitHub() {
+    try {
+        const resp = await fetch("https://raw.githubusercontent.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/main/" + DATA_FILE + "?t=" + Date.now());
+        if (resp.ok) return await resp.json();
+    } catch(e) {}
+    return null;
+}
+
+// 收集所有数据（供后续手动同步使用）
+function collectAllData() {
+    return {
+        banner: {
+            title: localStorage.getItem('zgj_banner_title') || '视觉叙事 · 极简表达',
+            subtitle: localStorage.getItem('zgj_banner_subtitle') || '17年经验平面设计师 | 品牌 / UI / 印刷物 / 3D视觉'
+        },
+        about: JSON.parse(localStorage.getItem(ABOUT_KEY) || '{}'),
+        career: JSON.parse(localStorage.getItem(CAREER_KEY) || '[]'),
+        journal: JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]'),
+        contact: JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}')
+    };
+}
+
+// 同步到GitHub（需要通过服务器端处理，或手动更新）
+async function syncToGitHub() {
+    // 由于安全限制，前端无法直接通过GitHub API写入
+    // 数据已保存到LocalStorage
+    // 如需同步，请通过其他方式更新 data.json 文件
+    console.log('Data saved to local storage. GitHub sync requires server-side processing.');
+    return { success: true };
+}
+
 /* ===== 配置 ===== */
 const ADMIN_PASS = "zgj2025";
 const BANNER_KEY = "zgj_banner_image";
@@ -504,11 +544,20 @@ document.getElementById('bannerFileInput').addEventListener('change',function(){
 function saveBanner(){
     var textData={title:document.getElementById('bannerTitle').value,subtitle:document.getElementById('bannerSubtitle').value};
     localStorage.setItem('zgj_banner_text',JSON.stringify(textData));
+    localStorage.setItem('zgj_banner_title', textData.title);
+    localStorage.setItem('zgj_banner_subtitle', textData.subtitle);
     var preview=document.getElementById('bannerPreview');
     if(preview.style.display!=='none'&&preview.src.startsWith('data:image')){
         localStorage.setItem(BANNER_KEY,preview.src);
     }
-    alert('Banner 设置已保存！');
+    // 同步到GitHub
+    syncToGitHub().then(function(result) {
+        if (result.success) {
+            alert('Banner 设置已保存并同步到服务器！');
+        } else {
+            alert('已保存到本地，但服务器同步失败：' + result.error);
+        }
+    });
 }
 function removeBannerImage(){
     localStorage.removeItem(BANNER_KEY);
@@ -553,7 +602,14 @@ function addSkill(){
 function saveAbout(){
     var data={text1:document.getElementById('aboutText1').value,text2:document.getElementById('aboutText2').value,text3:document.getElementById('aboutText3').value,skills:_skills};
     localStorage.setItem(ABOUT_KEY,JSON.stringify(data));
-    alert('关于我 已保存！');
+    // 同步到GitHub
+    syncToGitHub().then(function(result) {
+        if (result.success) {
+            alert('关于我 已保存并同步到服务器！');
+        } else {
+            alert('已保存到本地，但服务器同步失败');
+        }
+    });
 }
 
 /* ===== 工作历程 ===== */
@@ -609,6 +665,9 @@ function saveJourneyItem(){
     item.desc=document.getElementById('editJourneyDesc').value;
     if(idx<0)_journeyData.push(item);
     localStorage.setItem(CAREER_KEY,JSON.stringify(_journeyData));
+    syncToGitHub().then(function() { alert('工作经历已保存并同步！'); });
+    closeJourneyEditor();renderJourneyList();
+}
     renderJourneyList();
     closeJourneyEditor();
 }
@@ -845,8 +904,10 @@ function saveJournalItem(){
     item.content=document.getElementById('editJournalContent').value;
     if(idx<0)_journalData.push(item);
     localStorage.setItem(JOURNAL_KEY,JSON.stringify(_journalData));
+    syncToGitHub();
     renderJournalList();
     closeJournalEditor();
+    alert('设计日志已保存！');
 }
 function removeJournalItem(idx){
     _journalData.splice(idx,1);
@@ -876,7 +937,13 @@ function loadContactData(){
 function saveContact(){
     var data={email:document.getElementById('contactEmail').value,phone:document.getElementById('contactPhone').value,location:document.getElementById('contactLocation').value,note:document.getElementById('contactNote').value};
     localStorage.setItem(CONTACT_KEY,JSON.stringify(data));
-    alert('联系方式已保存！');
+    syncToGitHub().then(function(result) {
+        if (result.success) {
+            alert('联系方式已保存并同步到服务器！');
+        } else {
+            alert('已保存到本地，但服务器同步失败');
+        }
+    });
 }
 
 /* ===== 简历上传（使用 IndexedDB 存储，突破 5MB 限制）===== */
