@@ -1,0 +1,25 @@
+{
+  "banner": {
+    "title": "视觉叙事 · 极简表达",
+    "subtitle": "17年经验平面设计师 | 品牌 / UI / 印刷物 / 3D视觉"
+  },
+  "about": {
+    "text": "资深平面设计师，专注于品牌视觉、UI设计、包装印刷等领域的创意解决方案。",
+    "skills": ["品牌设计", "UI/UX", "包装设计", "印刷品", "3D视觉"]
+  },
+  "career": [
+    {
+      "period": "2015-2026",
+      "company": "极视传媒",
+      "role": "设计总监",
+      "desc": "负责公司整体视觉设计方向，主导多个大型品牌项目。"
+    }
+  ],
+  "journal": [],
+  "contact": {
+    "email": "contact@example.com",
+    "phone": "",
+    "wechat": "",
+    "note": ""
+  }
+}
