@@ -1024,7 +1024,7 @@ function clearAllWorks(){
 /* ===== 导出数据 ===== */
 function showExportModal(){
     var data = {};
-    try{ data.banner  = JSON.parse(localStorage.getItem(BANNER_KEY)||'{}'); }catch(e){data.banner={};}
+    try{ var bt=localStorage.getItem('zgj_banner_text'); data.banner=bt?JSON.parse(bt):{}; }catch(e){data.banner={};}
     try{ data.about   = JSON.parse(localStorage.getItem(ABOUT_KEY)||'{}');  }catch(e){data.about={};}
     try{ data.career = JSON.parse(localStorage.getItem(CAREER_KEY)||'[]');  }catch(e){data.career=[];}
     try{ data.works   = JSON.parse(localStorage.getItem(WORKS_KEY)||'[]');  }catch(e){data.works=[];}
