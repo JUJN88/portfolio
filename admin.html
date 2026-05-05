@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -1024,7 +1025,16 @@ function clearAllWorks(){
 /* ===== 导出数据 ===== */
 function showExportModal(){
     var data = {};
-    try{ var bt=localStorage.getItem('zgj_banner_text'); data.banner=bt?JSON.parse(bt):{}; }catch(e){data.banner={};}
+    try{ 
+        var bt=localStorage.getItem('zgj_banner_text');
+        if(bt && bt!='{}'){data.banner=JSON.parse(bt);}
+        else{
+            var t=localStorage.getItem('zgj_banner_title');
+            var s=localStorage.getItem('zgj_banner_subtitle');
+            if(t || s){data.banner={title:t||'',subtitle:s||''};}
+            else{data.banner={};}
+        }
+    }catch(e){data.banner={};}
     try{ data.about   = JSON.parse(localStorage.getItem(ABOUT_KEY)||'{}');  }catch(e){data.about={};}
     try{ data.career = JSON.parse(localStorage.getItem(CAREER_KEY)||'[]');  }catch(e){data.career=[];}
     try{ data.works   = JSON.parse(localStorage.getItem(WORKS_KEY)||'[]');  }catch(e){data.works=[];}
