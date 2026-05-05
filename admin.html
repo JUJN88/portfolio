@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -105,6 +106,7 @@ textarea{resize:vertical;min-height:80px;}
 <button class="admin-exit" onclick="window.open('index.html','_blank')">👁 预览主页</button>
 <button class="admin-exit" onclick="checkStorage()">📊 存储诊断</button>
 <button class="admin-exit" onclick="clearAllWorks()">🗑 清理作品集</button>
+<button class="admin-exit" onclick="showExportModal()" style="border-color:#1e6fd9;color:#1e6fd9;">📤 导出数据</button>
 </div>
 </nav>
 <div class="admin-content">
@@ -1019,6 +1021,31 @@ function clearAllWorks(){
         });
     }catch(e){alert('清理失败：'+e.message);}
 }
+
+/* ===== 导出数据 ===== */
+function showExportModal(){
+    var data = {};
+    try{ data.banner  = JSON.parse(localStorage.getItem(BANNER_KEY)||'{}'); }catch(e){data.banner={};}
+    try{ data.about   = JSON.parse(localStorage.getItem(ABOUT_KEY)||'{}');  }catch(e){data.about={};}
+    try{ data.career = JSON.parse(localStorage.getItem(CAREER_KEY)||'[]');  }catch(e){data.career=[];}
+    try{ data.works   = JSON.parse(localStorage.getItem(WORKS_KEY)||'[]');  }catch(e){data.works=[];}
+    try{ data.journal = JSON.parse(localStorage.getItem(JOURNAL_KEY)||'[]'); }catch(e){data.journal=[];}
+    try{ data.contact = JSON.parse(localStorage.getItem(CONTACT_KEY)||'{}'); }catch(e){data.contact={};}
+    document.getElementById('exportTextarea').value = JSON.stringify(data,null,2);
+    document.getElementById('exportModal').classList.add('active');
+}
+function copyExportData(){
+    var ta=document.getElementById('exportTextarea');
+    ta.select();ta.setSelectionRange(0,ta.value.length);
+    document.execCommand('copy');
+    alert('✅ 已复制！\n\n请粘贴到 GitHub data.json 并提交。');
+}
+function downloadExportData(){
+    var dataStr=document.getElementById('exportTextarea').value;
+    var blob=new Blob([dataStr],{type:'application/json'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='data.json';a.click();
+    URL.revokeObjectURL(url);
+}
+
 </script>
-</body>
-</html>
