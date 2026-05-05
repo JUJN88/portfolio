@@ -668,9 +668,6 @@ function saveJourneyItem(){
     syncToGitHub().then(function() { alert('工作经历已保存并同步！'); });
     closeJourneyEditor();renderJourneyList();
 }
-    renderJourneyList();
-    closeJourneyEditor();
-}
 function removeJourneyItem(idx){
     _journeyData.splice(idx,1);
     renderJourneyList();
