@@ -183,7 +183,7 @@ body{background:#000;color:#eaeef2;font-family:'Inter',-apple-system,BlinkMacSys
 
 <!-- 设计日志 -->
 <section id="journal" class="section">
-<h2 class="section-title">设计日志<span class="section-en"> / JORNAL</span></h2>
+<h2 class="section-title">设计日志<span class="section-en"> / JOURNAL</span></h2>
 <div class="journal-grid" id="journalGrid"></div>
 </section>
 
@@ -235,59 +235,286 @@ body{background:#000;color:#eaeef2;font-family:'Inter',-apple-system,BlinkMacSys
 <script>
 /* ===== 配置 ===== */
 const CATEGORIES = [
-{ id:'brand', name:'品牌视觉', imageKey:'cat_brand', color:'#1e6fd9' },
-{ id:'ui', name:'UI/UX设计', imageKey:'cat_ui', color:'#10b981' },
-{ id:'print', name:'平面印刷', imageKey:'cat_print', color:'#f59e0b' },
-{ id:'operation', name:'运营设计', imageKey:'cat_operation', color:'#ec4899' },
-{ id:'ppt', name:'PPT视觉', imageKey:'cat_ppt', color:'#8b5cf6' },
-{ id:'other', name:'其他设计', imageKey:'cat_other', color:'#6b7280' }
+{ id:'brand', name:'品牌视觉', cover:'images/covers/brand.jpg.png', color:'#1e6fd9' },
+{ id:'ui', name:'UI/UX设计', cover:'images/covers/ui.jpg.png', color:'#10b981' },
+{ id:'print', name:'平面印刷', cover:'images/covers/print.jpg.png', color:'#f59e0b' },
+{ id:'operation', name:'运营设计', cover:'images/covers/operation.jpg.png', color:'#ec4899' },
+{ id:'ppt', name:'PPT视觉', cover:'images/covers/ppt.jpg.png', color:'#8b5cf6' },
+{ id:'other', name:'其他设计', cover:'images/covers/other.jpg.png', color:'#6b7280' }
 ];
-const WORKS_KEY = "zgj_portfolio_works_v2";
-const BANNER_KEY = "zgj_banner_image";
 const ABOUT_KEY = "zgj_about_data_v2";
 const CAREER_KEY = "zgj_career_timeline";
 const JOURNAL_KEY = "zgj_portfolio_journal_v2";
 const CONTACT_KEY = "zgj_contact_data_v2";
 
-/* ===== IndexedDB 存储层（与 admin.html 共用）===== */
-var DB_NAME='PortfolioDB',DB_VER=1,_db=null;
-function openDB(callback){
-    if(_db){callback(_db);return;}
-    var req=indexedDB.open(DB_NAME,DB_VER);
-    req.onupgradeneeded=function(e){var db=e.target.result;
-        if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});
-        if(!db.objectStoreNames.contains('data'))db.createObjectStore('data',{keyPath:'id'});
-    };
-    req.onsuccess=function(e){_db=e.target.result;callback(_db);};
-    req.onerror=function(){console.error('IndexedDB 打开失败');callback(null);};
-}
-function dbGet(store,key,callback){
-    openDB(function(db){
-        if(!db){callback(null);return;}
-        var tx=db.transaction(store,'readonly'),s=tx.objectStore(store);
-        var req=s.get(key);
-        req.onsuccess=function(e){callback(e.target.result?e.target.result.value:null);};
-        req.onerror=function(){callback(null);};
-    });
-}
-function dbSet(store,key,value,callback){
-    openDB(function(db){
-        if(!db){if(callback)callback(false);return;}
-        var tx=db.transaction(store,'readwrite'),s=tx.objectStore(store);
-        var req=s.put({id:key,value:value});
-        req.onsuccess=function(){if(callback)callback(true);};
-        req.onerror=function(){if(callback)callback(false);};
-    });
-}
-function dbRemove(store,key,callback){
-    openDB(function(db){
-        if(!db){if(callback)callback(false);return;}
-        var tx=db.transaction(store,'readwrite'),s=tx.objectStore(store);
-        var req=s.delete(key);
-        req.onsuccess=function(){if(callback)callback(true);};
-        req.onerror=function(){if(callback)callback(false);};
-    });
-}
+/* ===== 静态图片数据（从 images/ 文件夹加载）===== */
+const STATIC_WORKS = [
+/* --- 品牌视觉 --- */
+{id:'brand_1',title:'品牌视觉作品 1',category:'品牌视觉',desc:'',imageData:'images/brand/ChatGPT Image 2026年4月27日 21_49_18 拷贝.jpg'},
+/* --- UI/UX设计 --- */
+{id:'ui_1',title:'UI/UX设计作品 1',category:'UI/UX设计',desc:'',imageData:'images/ui/1777957030867_3328_4-_____compressed.jpeg'},
+{id:'ui_2',title:'UI/UX设计作品 2',category:'UI/UX设计',desc:'',imageData:'images/ui/1777957030937_9938______compressed.jpeg'},
+{id:'ui_3',title:'UI/UX设计作品 3',category:'UI/UX设计',desc:'',imageData:'images/ui/1777957030979_6270_1-___compressed.jpeg'},
+{id:'ui_4',title:'UI/UX设计作品 4',category:'UI/UX设计',desc:'',imageData:'images/ui/1777957030987_6094_2-1_______compressed.jpeg'},
+{id:'ui_5',title:'UI/UX设计作品 5',category:'UI/UX设计',desc:'',imageData:'images/ui/1777957030995_1196_2-_____compressed.jpeg'},
+{id:'ui_6',title:'UI/UX设计作品 6',category:'UI/UX设计',desc:'',imageData:'images/ui/1777959712782_1459_iPhone_X_XS_11_Pro___1_compressed.jpeg'},
+{id:'ui_7',title:'UI/UX设计作品 7',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437022_9857__________compressed.jpeg'},
+{id:'ui_8',title:'UI/UX设计作品 8',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437024_1421_____1_compressed.jpeg'},
+{id:'ui_9',title:'UI/UX设计作品 9',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437024_8154_____2_compressed.jpeg'},
+{id:'ui_10',title:'UI/UX设计作品 10',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437033_7417____2_compressed.jpeg'},
+{id:'ui_11',title:'UI/UX设计作品 11',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437039_1769_______compressed.jpeg'},
+{id:'ui_12',title:'UI/UX设计作品 12',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437040_5262______compressed.jpeg'},
+{id:'ui_13',title:'UI/UX设计作品 13',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437041_2420______compressed.jpeg'},
+{id:'ui_14',title:'UI/UX设计作品 14',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437041_4101________compressed.jpeg'},
+{id:'ui_15',title:'UI/UX设计作品 15',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437044_688_________compressed.jpeg'},
+{id:'ui_16',title:'UI/UX设计作品 16',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437046_2252______compressed.jpeg'},
+{id:'ui_17',title:'UI/UX设计作品 17',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437047_6460______compressed.jpeg'},
+{id:'ui_18',title:'UI/UX设计作品 18',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437049_2579_____2_compressed.jpeg'},
+{id:'ui_19',title:'UI/UX设计作品 19',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437049_4773______compressed.jpeg'},
+{id:'ui_20',title:'UI/UX设计作品 20',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437050_8453______compressed.jpeg'},
+{id:'ui_21',title:'UI/UX设计作品 21',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437051_4810________compressed.jpeg'},
+{id:'ui_22',title:'UI/UX设计作品 22',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437052_1169______compressed.jpeg'},
+{id:'ui_23',title:'UI/UX设计作品 23',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437054_2770______compressed.jpeg'},
+{id:'ui_24',title:'UI/UX设计作品 24',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437065_6170___________compressed.jpeg'},
+{id:'ui_25',title:'UI/UX设计作品 25',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437066_3991_GIS____________compressed.jpeg'},
+{id:'ui_26',title:'UI/UX设计作品 26',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437067_4422_GIS_____compressed.jpeg'},
+{id:'ui_27',title:'UI/UX设计作品 27',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437069_2170_Web_1920___1_compressed.jpeg'},
+{id:'ui_28',title:'UI/UX设计作品 28',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437071_9938_Web_1920___2_compressed.jpeg'},
+{id:'ui_29',title:'UI/UX设计作品 29',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437073_100_Web_1920___3_compressed.jpeg'},
+{id:'ui_30',title:'UI/UX设计作品 30',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437073_9423_Web_1920___4_compressed.jpeg'},
+{id:'ui_31',title:'UI/UX设计作品 31',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437080_5763_Web_1920___6_compressed.jpeg'},
+{id:'ui_32',title:'UI/UX设计作品 32',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437080_6186_Web_1920___5_compressed.jpeg'},
+{id:'ui_33',title:'UI/UX设计作品 33',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437087_7588_Web_1920___7_compressed.jpeg'},
+{id:'ui_34',title:'UI/UX设计作品 34',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437088_5885_Web_1920___8_compressed.jpeg'},
+{id:'ui_35',title:'UI/UX设计作品 35',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437089_6843_Web_1920___10_compressed.jpeg'},
+{id:'ui_36',title:'UI/UX设计作品 36',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437089_8471_Web_1920___9_compressed.jpeg'},
+{id:'ui_37',title:'UI/UX设计作品 37',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437090_9861_Web_1920___11_compressed.jpeg'},
+{id:'ui_38',title:'UI/UX设计作品 38',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437102_1404_________compressed.jpeg'},
+{id:'ui_39',title:'UI/UX设计作品 39',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437102_1791_Web_1920___12_compressed.jpeg'},
+{id:'ui_40',title:'UI/UX设计作品 40',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437103_1847______compressed.jpeg'},
+{id:'ui_41',title:'UI/UX设计作品 41',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437104_779________compressed.jpeg'},
+{id:'ui_42',title:'UI/UX设计作品 42',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437106_8883______compressed.jpeg'},
+{id:'ui_43',title:'UI/UX设计作品 43',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437108_210_1_____compressed.jpeg'},
+{id:'ui_44',title:'UI/UX设计作品 44',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437108_7172________compressed.jpeg'},
+{id:'ui_45',title:'UI/UX设计作品 45',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437110_7228_2___2_compressed.jpeg'},
+{id:'ui_46',title:'UI/UX设计作品 46',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437110_8937_2___1_compressed.jpeg'},
+{id:'ui_47',title:'UI/UX设计作品 47',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437111_3003_iPhone_12_Pro_Max___1_compressed.jpeg'},
+{id:'ui_48',title:'UI/UX设计作品 48',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437112_2054_iPhone_12_Pro_Max___3_compressed.jpeg'},
+{id:'ui_49',title:'UI/UX设计作品 49',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437113_1586_iPhone_12_Pro_Max___4_compressed.jpeg'},
+{id:'ui_50',title:'UI/UX设计作品 50',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437113_7004______compressed.jpeg'},
+{id:'ui_51',title:'UI/UX设计作品 51',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437114_5357______compressed.jpeg'},
+{id:'ui_52',title:'UI/UX设计作品 52',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437114_7534______compressed.jpeg'},
+{id:'ui_53',title:'UI/UX设计作品 53',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437115_2177____compressed.jpeg'},
+{id:'ui_54',title:'UI/UX设计作品 54',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437116_3060______compressed.jpeg'},
+{id:'ui_55',title:'UI/UX设计作品 55',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437120_6286_______compressed.jpeg'},
+{id:'ui_56',title:'UI/UX设计作品 56',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437121_5175_______compressed.jpeg'},
+{id:'ui_57',title:'UI/UX设计作品 57',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437121_7185______compressed.jpeg'},
+{id:'ui_58',title:'UI/UX设计作品 58',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437121_9764_______compressed.jpeg'},
+{id:'ui_59',title:'UI/UX设计作品 59',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437122_1422_iPhone_12_Pro_Max___1_compressed.jpeg'},
+{id:'ui_60',title:'UI/UX设计作品 60',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437122_4867______compressed.jpeg'},
+{id:'ui_61',title:'UI/UX设计作品 61',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437122_9706_______compressed.jpeg'},
+{id:'ui_62',title:'UI/UX设计作品 62',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437127_1216_iPhone_12_Pro_Max___2_compressed.jpeg'},
+{id:'ui_63',title:'UI/UX设计作品 63',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437128_5069_iPhone_12_Pro_Max___3_compressed.jpeg'},
+{id:'ui_64',title:'UI/UX设计作品 64',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437128_7149_iPhone_12_Pro_Max___4_compressed.jpeg'},
+{id:'ui_65',title:'UI/UX设计作品 65',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437130_2169_iPhone_12_Pro_Max___6_compressed.jpeg'},
+{id:'ui_66',title:'UI/UX设计作品 66',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437130_2290_iPhone_12_Pro_Max___5_compressed.jpeg'},
+{id:'ui_67',title:'UI/UX设计作品 67',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437131_2874_iPhone_12_Pro_Max___7_compressed.jpeg'},
+{id:'ui_68',title:'UI/UX设计作品 68',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437132_3520_iPhone_12_Pro_Max___8_compressed.jpeg'},
+{id:'ui_69',title:'UI/UX设计作品 69',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437132_6552_iPhone_12_Pro_Max___9_compressed.jpeg'},
+{id:'ui_70',title:'UI/UX设计作品 70',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437133_1492_iPhone_12_Pro_Max___11_compressed.jpeg'},
+{id:'ui_71',title:'UI/UX设计作品 71',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437136_4099______compressed.jpeg'},
+{id:'ui_72',title:'UI/UX设计作品 72',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437137_5032______compressed.jpeg'},
+{id:'ui_73',title:'UI/UX设计作品 73',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437138_3670________compressed.jpeg'},
+{id:'ui_74',title:'UI/UX设计作品 74',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437140_5306______compressed.jpeg'},
+{id:'ui_75',title:'UI/UX设计作品 75',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437140_6154______compressed.jpeg'},
+{id:'ui_76',title:'UI/UX设计作品 76',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437140_7411_____-1_compressed.jpeg'},
+{id:'ui_77',title:'UI/UX设计作品 77',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437143_115____compressed.jpeg'},
+{id:'ui_78',title:'UI/UX设计作品 78',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437143_1811______compressed.jpeg'},
+{id:'ui_79',title:'UI/UX设计作品 79',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437144_2859______compressed.jpeg'},
+{id:'ui_80',title:'UI/UX设计作品 80',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437145_354______compressed.jpeg'},
+{id:'ui_81',title:'UI/UX设计作品 81',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437147_5767______compressed.jpeg'},
+{id:'ui_82',title:'UI/UX设计作品 82',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437147_8615______compressed.jpeg'},
+{id:'ui_83',title:'UI/UX设计作品 83',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437151_88_GIS____________compressed.jpeg'},
+{id:'ui_84',title:'UI/UX设计作品 84',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437153_7623_GIS_____compressed.jpeg'},
+{id:'ui_85',title:'UI/UX设计作品 85',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437156_7734_Web_1920___1_compressed.jpeg'},
+{id:'ui_86',title:'UI/UX设计作品 86',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437158_9409_Web_1920___2_compressed.jpeg'},
+{id:'ui_87',title:'UI/UX设计作品 87',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437162_3221_Web_1920___3_compressed.jpeg'},
+{id:'ui_88',title:'UI/UX设计作品 88',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437164_5792_Web_1920___4_compressed.jpeg'},
+{id:'ui_89',title:'UI/UX设计作品 89',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437167_3470_Web_1920___5_compressed.jpeg'},
+{id:'ui_90',title:'UI/UX设计作品 90',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437168_8280________compressed.jpeg'},
+{id:'ui_91',title:'UI/UX设计作品 91',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437170_390______compressed.jpeg'},
+{id:'ui_92',title:'UI/UX设计作品 92',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437170_8857_____1_compressed.jpeg'},
+{id:'ui_93',title:'UI/UX设计作品 93',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437176_1294______compressed.jpeg'},
+{id:'ui_94',title:'UI/UX设计作品 94',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437176_3221_______compressed.jpeg'},
+{id:'ui_95',title:'UI/UX设计作品 95',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437177_5898______compressed.jpeg'},
+{id:'ui_96',title:'UI/UX设计作品 96',category:'UI/UX设计',desc:'',imageData:'images/ui/1777960437177_8327________compressed.jpeg'},
+/* --- 平面印刷 --- */
+{id:'print_1',title:'平面印刷作品 1',category:'平面印刷',desc:'',imageData:'images/print/1777955158387_845______compressed.jpg'},
+{id:'print_2',title:'平面印刷作品 2',category:'平面印刷',desc:'',imageData:'images/print/1777955158390_8832___01_compressed.jpg'},
+{id:'print_3',title:'平面印刷作品 3',category:'平面印刷',desc:'',imageData:'images/print/1777955158396_4205___02_compressed.jpg'},
+{id:'print_4',title:'平面印刷作品 4',category:'平面印刷',desc:'',imageData:'images/print/1777955158401_7698___03_compressed.jpg'},
+{id:'print_5',title:'平面印刷作品 5',category:'平面印刷',desc:'',imageData:'images/print/1777955158407_8923___04_compressed.jpg'},
+{id:'print_6',title:'平面印刷作品 6',category:'平面印刷',desc:'',imageData:'images/print/1777955158410_7811___05_compressed.jpg'},
+{id:'print_7',title:'平面印刷作品 7',category:'平面印刷',desc:'',imageData:'images/print/1777955158415_6925___06_compressed.jpg'},
+{id:'print_8',title:'平面印刷作品 8',category:'平面印刷',desc:'',imageData:'images/print/1777955158418_3131___07_compressed.jpg'},
+{id:'print_9',title:'平面印刷作品 9',category:'平面印刷',desc:'',imageData:'images/print/1777955158423_3667___08_compressed.jpg'},
+{id:'print_10',title:'平面印刷作品 10',category:'平面印刷',desc:'',imageData:'images/print/1777955158426_5394___09_compressed.jpg'},
+{id:'print_11',title:'平面印刷作品 11',category:'平面印刷',desc:'',imageData:'images/print/1777955158430_298___10_compressed.jpg'},
+{id:'print_12',title:'平面印刷作品 12',category:'平面印刷',desc:'',imageData:'images/print/1777955158432_7577___11_compressed.jpg'},
+{id:'print_13',title:'平面印刷作品 13',category:'平面印刷',desc:'',imageData:'images/print/1777955555385_2338_________compressed.jpg'},
+{id:'print_14',title:'平面印刷作品 14',category:'平面印刷',desc:'',imageData:'images/print/1777955555389_5766________2_compressed.jpg'},
+{id:'print_15',title:'平面印刷作品 15',category:'平面印刷',desc:'',imageData:'images/print/1777955722323_6485___2_compressed.jpg'},
+{id:'print_16',title:'平面印刷作品 16',category:'平面印刷',desc:'',imageData:'images/print/1777955722359_858____compressed.jpg'},
+{id:'print_17',title:'平面印刷作品 17',category:'平面印刷',desc:'',imageData:'images/print/1777955821817_4363_0515-____S4_____-01_compressed.jpg'},
+{id:'print_18',title:'平面印刷作品 18',category:'平面印刷',desc:'',imageData:'images/print/1777955821822_5434_0515-____S4_____-02_compressed.jpg'},
+{id:'print_19',title:'平面印刷作品 19',category:'平面印刷',desc:'',imageData:'images/print/1777955821825_8460_0515-____S4_____-03_compressed.jpg'},
+{id:'print_20',title:'平面印刷作品 20',category:'平面印刷',desc:'',imageData:'images/print/1777955821829_188_0515-____S4_____-04_compressed.jpg'},
+{id:'print_21',title:'平面印刷作品 21',category:'平面印刷',desc:'',imageData:'images/print/1777955821838_7645_0515-____S4_____-05_compressed.jpg'},
+{id:'print_22',title:'平面印刷作品 22',category:'平面印刷',desc:'',imageData:'images/print/1777955821844_8717_0515-____S4_____-06_compressed.jpg'},
+{id:'print_23',title:'平面印刷作品 23',category:'平面印刷',desc:'',imageData:'images/print/1777955821849_5963_0515-____S4_____-07_compressed.jpg'},
+{id:'print_24',title:'平面印刷作品 24',category:'平面印刷',desc:'',imageData:'images/print/1777955821855_7659_0515-____S4_____-08_compressed.jpg'},
+{id:'print_25',title:'平面印刷作品 25',category:'平面印刷',desc:'',imageData:'images/print/1777955891543_9166_1_compressed.jpg'},
+{id:'print_26',title:'平面印刷作品 26',category:'平面印刷',desc:'',imageData:'images/print/1777955891553_8927_3_compressed.jpg'},
+{id:'print_27',title:'平面印刷作品 27',category:'平面印刷',desc:'',imageData:'images/print/1777955891560_8962_4_compressed.jpg'},
+{id:'print_28',title:'平面印刷作品 28',category:'平面印刷',desc:'',imageData:'images/print/1777955891574_8563_9_compressed.jpg'},
+{id:'print_29',title:'平面印刷作品 29',category:'平面印刷',desc:'',imageData:'images/print/1777955891583_7383_10_compressed.jpg'},
+{id:'print_30',title:'平面印刷作品 30',category:'平面印刷',desc:'',imageData:'images/print/1777955891591_1221_11_compressed.jpg'},
+{id:'print_31',title:'平面印刷作品 31',category:'平面印刷',desc:'',imageData:'images/print/1777955891605_4480_2_compressed.jpg'},
+{id:'print_32',title:'平面印刷作品 32',category:'平面印刷',desc:'',imageData:'images/print/1777955891612_7748_5_compressed.jpg'},
+{id:'print_33',title:'平面印刷作品 33',category:'平面印刷',desc:'',imageData:'images/print/1777955891618_8805_6_compressed.jpg'},
+{id:'print_34',title:'平面印刷作品 34',category:'平面印刷',desc:'',imageData:'images/print/1777955891628_6695_7_compressed.jpg'},
+{id:'print_35',title:'平面印刷作品 35',category:'平面印刷',desc:'',imageData:'images/print/1777955891637_4604_8_compressed.jpg'},
+{id:'print_36',title:'平面印刷作品 36',category:'平面印刷',desc:'',imageData:'images/print/1777955891644_3937_12_compressed.jpg'},
+{id:'print_37',title:'平面印刷作品 37',category:'平面印刷',desc:'',imageData:'images/print/1777955891649_9219_13_compressed.jpg'},
+{id:'print_38',title:'平面印刷作品 38',category:'平面印刷',desc:'',imageData:'images/print/1777957556321_1026_0226_-______________-02_compressed.jpeg'},
+{id:'print_39',title:'平面印刷作品 39',category:'平面印刷',desc:'',imageData:'images/print/1777957556328_1675_0226_-______________-01_compressed.jpeg'},
+{id:'print_40',title:'平面印刷作品 40',category:'平面印刷',desc:'',imageData:'images/print/1777957556334_896_0226_-____________-01_compressed.jpeg'},
+{id:'print_41',title:'平面印刷作品 41',category:'平面印刷',desc:'',imageData:'images/print/1777957556338_7851_0226_-____________-02_compressed.jpeg'},
+{id:'print_42',title:'平面印刷作品 42',category:'平面印刷',desc:'',imageData:'images/print/1777957556518_5053_1203_-___________1_compressed.jpeg'},
+{id:'print_43',title:'平面印刷作品 43',category:'平面印刷',desc:'',imageData:'images/print/1777957556523_2030_1203_-_______-02_compressed.jpeg'},
+{id:'print_44',title:'平面印刷作品 44',category:'平面印刷',desc:'',imageData:'images/print/1777958216980_6696____________01_compressed.jpeg'},
+{id:'print_45',title:'平面印刷作品 45',category:'平面印刷',desc:'',imageData:'images/print/1777958216982_3079____________02_compressed.jpeg'},
+{id:'print_46',title:'平面印刷作品 46',category:'平面印刷',desc:'',imageData:'images/print/1777958216982_3989____________03_compressed.jpeg'},
+{id:'print_47',title:'平面印刷作品 47',category:'平面印刷',desc:'',imageData:'images/print/1777958216983_9058____________04_compressed.jpeg'},
+{id:'print_48',title:'平面印刷作品 48',category:'平面印刷',desc:'',imageData:'images/print/1777958216985_7805____________05_compressed.jpeg'},
+{id:'print_49',title:'平面印刷作品 49',category:'平面印刷',desc:'',imageData:'images/print/1777958216986_3003____________06_compressed.jpeg'},
+{id:'print_50',title:'平面印刷作品 50',category:'平面印刷',desc:'',imageData:'images/print/1777958216988_5631____________07_compressed.jpeg'},
+{id:'print_51',title:'平面印刷作品 51',category:'平面印刷',desc:'',imageData:'images/print/1777958216989_3220____________08_compressed.jpeg'},
+{id:'print_52',title:'平面印刷作品 52',category:'平面印刷',desc:'',imageData:'images/print/1777958216990_3768____________09_compressed.jpeg'},
+{id:'print_53',title:'平面印刷作品 53',category:'平面印刷',desc:'',imageData:'images/print/1777958216991_7116____________10_compressed.jpeg'},
+/* --- 运营设计 --- */
+{id:'operation_1',title:'运营设计作品 1',category:'运营设计',desc:'',imageData:'images/operation/1777955555372_6469_1____compressed.jpg'},
+{id:'operation_2',title:'运营设计作品 2',category:'运营设计',desc:'',imageData:'images/operation/1777955555373_8723_2____compressed.jpg'},
+{id:'operation_3',title:'运营设计作品 3',category:'运营设计',desc:'',imageData:'images/operation/1777955555374_9936_3____compressed.jpg'},
+{id:'operation_4',title:'运营设计作品 4',category:'运营设计',desc:'',imageData:'images/operation/1777955555377_9804_4____compressed.jpg'},
+{id:'operation_5',title:'运营设计作品 5',category:'运营设计',desc:'',imageData:'images/operation/1777955555394_8785___banner__1__compressed.jpg'},
+{id:'operation_6',title:'运营设计作品 6',category:'运营设计',desc:'',imageData:'images/operation/1777955555396_7466___banner__2__compressed.jpg'},
+{id:'operation_7',title:'运营设计作品 7',category:'运营设计',desc:'',imageData:'images/operation/1777955555398_4665___banner__3__compressed.jpg'},
+{id:'operation_8',title:'运营设计作品 8',category:'运营设计',desc:'',imageData:'images/operation/1777955555401_522___banner__4__compressed.jpg'},
+{id:'operation_9',title:'运营设计作品 9',category:'运营设计',desc:'',imageData:'images/operation/1777955555407_7013_________2_compressed.jpg'},
+{id:'operation_10',title:'运营设计作品 10',category:'运营设计',desc:'',imageData:'images/operation/1777955555413_668__________1_compressed.jpg'},
+{id:'operation_11',title:'运营设计作品 11',category:'运营设计',desc:'',imageData:'images/operation/1777955555418_3467__________2_compressed.jpg'},
+{id:'operation_12',title:'运营设计作品 12',category:'运营设计',desc:'',imageData:'images/operation/1777955555422_2528__________3_compressed.jpg'},
+{id:'operation_13',title:'运营设计作品 13',category:'运营设计',desc:'',imageData:'images/operation/1777955555424_9168__________4_compressed.jpg'},
+{id:'operation_14',title:'运营设计作品 14',category:'运营设计',desc:'',imageData:'images/operation/1777955555448_907__________compressed.jpg'},
+{id:'operation_15',title:'运营设计作品 15',category:'运营设计',desc:'',imageData:'images/operation/1777957711835_7556________compressed.jpeg'},
+{id:'operation_16',title:'运营设计作品 16',category:'运营设计',desc:'',imageData:'images/operation/1777957711851_2690________800x800_compressed.jpeg'},
+{id:'operation_17',title:'运营设计作品 17',category:'运营设计',desc:'',imageData:'images/operation/1777957711861_7662__________compressed.jpeg'},
+{id:'operation_18',title:'运营设计作品 18',category:'运营设计',desc:'',imageData:'images/operation/1777957711884_9394_0_______compressed.jpeg'},
+{id:'operation_19',title:'运营设计作品 19',category:'运营设计',desc:'',imageData:'images/operation/1777957711907_7647___________compressed.jpeg'},
+{id:'operation_20',title:'运营设计作品 20',category:'运营设计',desc:'',imageData:'images/operation/1777957883909_9614_155x180_compressed.jpeg'},
+{id:'operation_21',title:'运营设计作品 21',category:'运营设计',desc:'',imageData:'images/operation/1777957883957_6277_10____-160x120_compressed.jpeg'},
+{id:'operation_22',title:'运营设计作品 22',category:'运营设计',desc:'',imageData:'images/operation/1777957884048_5788_9____160x120_compressed.jpeg'},
+{id:'operation_23',title:'运营设计作品 23',category:'运营设计',desc:'',imageData:'images/operation/1777957884196_4751_1__1_265cmX140cm_compressed.jpeg'},
+{id:'operation_24',title:'运营设计作品 24',category:'运营设计',desc:'',imageData:'images/operation/1777957884352_2613_01_285x120_compressed.jpeg'},
+{id:'operation_25',title:'运营设计作品 25',category:'运营设计',desc:'',imageData:'images/operation/1777957934664_4768_240x120_compressed.jpeg'},
+{id:'operation_26',title:'运营设计作品 26',category:'运营设计',desc:'',imageData:'images/operation/1777957935106_4466_160x154_compressed.jpeg'},
+{id:'operation_27',title:'运营设计作品 27',category:'运营设计',desc:'',imageData:'images/operation/1777957935400_4969_155x180_compressed.jpeg'},
+{id:'operation_28',title:'运营设计作品 28',category:'运营设计',desc:'',imageData:'images/operation/1777957935691_3353_02_285x120_compressed.jpeg'},
+{id:'operation_29',title:'运营设计作品 29',category:'运营设计',desc:'',imageData:'images/operation/1777959712747_1249_banner-06_compressed.jpeg'},
+{id:'operation_30',title:'运营设计作品 30',category:'运营设计',desc:'',imageData:'images/operation/1777959712754_6490_banner-05_compressed.jpeg'},
+{id:'operation_31',title:'运营设计作品 31',category:'运营设计',desc:'',imageData:'images/operation/1777959712755_6709_banner-04_compressed.jpeg'},
+{id:'operation_32',title:'运营设计作品 32',category:'运营设计',desc:'',imageData:'images/operation/1777959712757_548_banner-01_compressed.jpeg'},
+{id:'operation_33',title:'运营设计作品 33',category:'运营设计',desc:'',imageData:'images/operation/1777959712758_1539_banner-02_compressed.jpeg'},
+{id:'operation_34',title:'运营设计作品 34',category:'运营设计',desc:'',imageData:'images/operation/1777959712759_270_banner-03_compressed.jpeg'},
+{id:'operation_35',title:'运营设计作品 35',category:'运营设计',desc:'',imageData:'images/operation/1777959712774_8510_________compressed.jpeg'},
+{id:'operation_36',title:'运营设计作品 36',category:'运营设计',desc:'',imageData:'images/operation/1777959712889_6995______compressed.jpeg'},
+{id:'operation_37',title:'运营设计作品 37',category:'运营设计',desc:'',imageData:'images/operation/粽子详情页 拷贝.jpg'},
+/* --- PPT视觉 --- */
+{id:'ppt_1',title:'PPT视觉作品 1',category:'PPT视觉',desc:'',imageData:'images/ppt/1777955722310_7722______-___2_compressed.jpg'},
+{id:'ppt_2',title:'PPT视觉作品 2',category:'PPT视觉',desc:'',imageData:'images/ppt/1777955722336_9253______compressed.jpg'},
+{id:'ppt_3',title:'PPT视觉作品 3',category:'PPT视觉',desc:'',imageData:'images/ppt/1777955722348_5586____500ml__4_____compressed.jpg'},
+{id:'ppt_4',title:'PPT视觉作品 4',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452837_9862___________01_compressed.jpeg'},
+{id:'ppt_5',title:'PPT视觉作品 5',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452840_4896___________02_compressed.jpeg'},
+{id:'ppt_6',title:'PPT视觉作品 6',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452842_2148___________03_compressed.jpeg'},
+{id:'ppt_7',title:'PPT视觉作品 7',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452843_9524___________04_compressed.jpeg'},
+{id:'ppt_8',title:'PPT视觉作品 8',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452845_1298___________05_compressed.jpeg'},
+{id:'ppt_9',title:'PPT视觉作品 9',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452845_6960___________06_compressed.jpeg'},
+{id:'ppt_10',title:'PPT视觉作品 10',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452847_6499___________07_compressed.jpeg'},
+{id:'ppt_11',title:'PPT视觉作品 11',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452848_8306___________08_compressed.jpeg'},
+{id:'ppt_12',title:'PPT视觉作品 12',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452850_6654___________09_compressed.jpeg'},
+{id:'ppt_13',title:'PPT视觉作品 13',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452851_5147___________10_compressed.jpeg'},
+{id:'ppt_14',title:'PPT视觉作品 14',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452852_1706___________11_compressed.jpeg'},
+{id:'ppt_15',title:'PPT视觉作品 15',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452854_3111___________12_compressed.jpeg'},
+{id:'ppt_16',title:'PPT视觉作品 16',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452855_2876___________13_compressed.jpeg'},
+{id:'ppt_17',title:'PPT视觉作品 17',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452857_5260___________14_compressed.jpeg'},
+{id:'ppt_18',title:'PPT视觉作品 18',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452859_3257___________16_compressed.jpeg'},
+{id:'ppt_19',title:'PPT视觉作品 19',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452859_5342___________15_compressed.jpeg'},
+{id:'ppt_20',title:'PPT视觉作品 20',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452868_1933________03_compressed.jpeg'},
+{id:'ppt_21',title:'PPT视觉作品 21',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452871_2469________04_compressed.jpeg'},
+{id:'ppt_22',title:'PPT视觉作品 22',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452875_7675________05_compressed.jpeg'},
+{id:'ppt_23',title:'PPT视觉作品 23',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452879_5873________06_compressed.jpeg'},
+{id:'ppt_24',title:'PPT视觉作品 24',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452882_4137________07_compressed.jpeg'},
+{id:'ppt_25',title:'PPT视觉作品 25',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452887_6193________08_compressed.jpeg'},
+{id:'ppt_26',title:'PPT视觉作品 26',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452893_8306________10_compressed.jpeg'},
+{id:'ppt_27',title:'PPT视觉作品 27',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452896_4782________11_compressed.jpeg'},
+{id:'ppt_28',title:'PPT视觉作品 28',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452899_9487________12_compressed.jpeg'},
+{id:'ppt_29',title:'PPT视觉作品 29',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452903_6897________13_compressed.jpeg'},
+{id:'ppt_30',title:'PPT视觉作品 30',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452906_6890________14_compressed.jpeg'},
+{id:'ppt_31',title:'PPT视觉作品 31',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452913_7118________15_compressed.jpeg'},
+{id:'ppt_32',title:'PPT视觉作品 32',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452921_427________17_compressed.jpeg'},
+{id:'ppt_33',title:'PPT视觉作品 33',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452930_9249________18_compressed.jpeg'},
+{id:'ppt_34',title:'PPT视觉作品 34',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452937_8777________19_compressed.jpeg'},
+{id:'ppt_35',title:'PPT视觉作品 35',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452953_9529________20_compressed.jpeg'},
+{id:'ppt_36',title:'PPT视觉作品 36',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452964_8952________21_compressed.jpeg'},
+{id:'ppt_37',title:'PPT视觉作品 37',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452973_3119________23_compressed.jpeg'},
+{id:'ppt_38',title:'PPT视觉作品 38',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452978_2349________24_compressed.jpeg'},
+{id:'ppt_39',title:'PPT视觉作品 39',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452980_7962________25_compressed.jpeg'},
+{id:'ppt_40',title:'PPT视觉作品 40',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452983_3006________26_compressed.jpeg'},
+{id:'ppt_41',title:'PPT视觉作品 41',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452986_6735________27_compressed.jpeg'},
+{id:'ppt_42',title:'PPT视觉作品 42',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452988_514______________02_compressed.jpeg'},
+{id:'ppt_43',title:'PPT视觉作品 43',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452989_1121______________03_compressed.jpeg'},
+{id:'ppt_44',title:'PPT视觉作品 44',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452990_7703______________04_compressed.jpeg'},
+{id:'ppt_45',title:'PPT视觉作品 45',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452993_4706______________05_compressed.jpeg'},
+{id:'ppt_46',title:'PPT视觉作品 46',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452994_3953______________06_compressed.jpeg'},
+{id:'ppt_47',title:'PPT视觉作品 47',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452995_5534______________07_compressed.jpeg'},
+{id:'ppt_48',title:'PPT视觉作品 48',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452996_466______________08_compressed.jpeg'},
+{id:'ppt_49',title:'PPT视觉作品 49',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452997_6153______________09_compressed.jpeg'},
+{id:'ppt_50',title:'PPT视觉作品 50',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452998_4535______________10_compressed.jpeg'},
+{id:'ppt_51',title:'PPT视觉作品 51',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452998_5326______________11_compressed.jpeg'},
+{id:'ppt_52',title:'PPT视觉作品 52',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957452999_5726______________12_compressed.jpeg'},
+{id:'ppt_53',title:'PPT视觉作品 53',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453000_7438______________13_compressed.jpeg'},
+{id:'ppt_54',title:'PPT视觉作品 54',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453001_2701______________14_compressed.jpeg'},
+{id:'ppt_55',title:'PPT视觉作品 55',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453003_1515______________16_compressed.jpeg'},
+{id:'ppt_56',title:'PPT视觉作品 56',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453003_8810______________15_compressed.jpeg'},
+{id:'ppt_57',title:'PPT视觉作品 57',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453004_6737______________17_compressed.jpeg'},
+{id:'ppt_58',title:'PPT视觉作品 58',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453005_403______________18_compressed.jpeg'},
+{id:'ppt_59',title:'PPT视觉作品 59',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453006_7294______________19_compressed.jpeg'},
+{id:'ppt_60',title:'PPT视觉作品 60',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453008_625______________20_compressed.jpeg'},
+{id:'ppt_61',title:'PPT视觉作品 61',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453008_9655______________21_compressed.jpeg'},
+{id:'ppt_62',title:'PPT视觉作品 62',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453009_6177______________23_compressed.jpeg'},
+{id:'ppt_63',title:'PPT视觉作品 63',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453009_6939______________22_compressed.jpeg'},
+{id:'ppt_64',title:'PPT视觉作品 64',category:'PPT视觉',desc:'',imageData:'images/ppt/1777957453010_47______________24_compressed.jpeg'},
+/* --- 其他设计 --- */
+{id:'other_1',title:'其他设计作品 1',category:'其他设计',desc:'',imageData:'images/other/1777960290851_6316_Web_1280___37_compressed.jpeg'},
+{id:'other_2',title:'其他设计作品 2',category:'其他设计',desc:'',imageData:'images/other/1777960290857_3793_Web_1280___38_compressed.jpeg'},
+{id:'other_3',title:'其他设计作品 3',category:'其他设计',desc:'',imageData:'images/other/1777960290870_1327_Web_1280___39_compressed.jpeg'},
+{id:'other_4',title:'其他设计作品 4',category:'其他设计',desc:'',imageData:'images/other/1777960290879_7162_Web_1280___36_compressed.jpeg'},
+{id:'other_5',title:'其他设计作品 5',category:'其他设计',desc:'',imageData:'images/other/1777960290891_5455_Web_1280___79_compressed.jpeg'},
+{id:'other_6',title:'其他设计作品 6',category:'其他设计',desc:'',imageData:'images/other/1777960290901_5898_Web_1280___78_compressed.jpeg'}
+];
+
+/* ===== 工具函数 ===== */
 function getStore(key,defaultVal){
     try{var v=localStorage.getItem(key);return v?JSON.parse(v):defaultVal;}catch(e){return defaultVal;}
 }
@@ -302,31 +529,17 @@ try{return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
 }
 
 /* ===== 数据加载 ===== */
-var categoryImages={};  // 存储分类图片数据
 
-function loadCategoryImages(callback){
-    var loaded=0;
-    CATEGORIES.forEach(function(cat){
-        dbGet('data',cat.imageKey,function(val){
-            if(val)categoryImages[cat.id]=val;
-            loaded++;
-            if(loaded===CATEGORIES.length && callback)callback();
-        });
-    });
-}
 function loadBanner(){
-try{
-var stored=localStorage.getItem(BANNER_KEY);
-if(stored&&stored.startsWith('data:image')){
-document.getElementById('bannerInner').style.backgroundImage='url('+stored+')';
-document.getElementById('bannerInner').style.backgroundSize='cover';
-}
-}catch(e){}
 try{
 var d=JSON.parse(localStorage.getItem('zgj_banner_text')||'{}');
 if(d.title)document.getElementById('bannerTitle').textContent=d.title;
 if(d.subtitle)document.getElementById('bannerSubtitle').textContent=d.subtitle;
 }catch(e){}
+// 使用静态 banner 图片
+document.getElementById('bannerInner').style.backgroundImage='url(images/banner/jimeng-2026-05-04-3837-\u6269\u5c55\u56fe\u7247\uff0c\u4fdd\u6301\u539f\u56fe\u98ce\u683c\u3001\u8272\u8c03\u548c\u5149\u5f71\uff0c\u5c06\u56fe\u7247\u5411\u56db\u5468\u6269\u5c55\uff0c\u4fdd\u6301\u573a\u666f\u548c\u7269\u4f53\u7684\u81ea\u7136\u8fde\u8d2f\u6027... \u62f7\u8d1d.jpg)';
+document.getElementById('bannerInner').style.backgroundSize='cover';
+document.getElementById('bannerInner').style.backgroundPosition='center';
 }
 
 function loadAbout(){
@@ -393,28 +606,13 @@ document.getElementById('contactBlock').innerHTML=
 '<div>⏳ '+esc(note)+'</div>';
 }
 
-/* ===== 作品集（从 IndexedDB 读取，与 admin.html 共用）===== */
-var worksData=[];
+/* ===== 作品集（从静态文件路径加载）===== */
+var worksData=STATIC_WORKS;
 function loadWorksData(callback){
-    dbGet('data',WORKS_KEY,function(val){
-        if(val&&val.length){worksData=val;}
-        else{worksData=getDefaultWorks();}
-        if(callback)callback();
-        else{renderCategories();}
-    });
+    // 直接使用静态数据，无需异步
+    if(callback)callback();
+    else renderCategories();
 }
-function getDefaultWorks(){return[
-    {id:"w1",title:"智慧谷品牌VI升级",category:"品牌视觉",desc:"全套品牌视觉识别系统",imageData:getPlaceholderSVG("智慧谷品牌VI升级")},
-    {id:"w2",title:"艾欧特品牌重塑",category:"品牌视觉",desc:"科技公司品牌形象设计",imageData:getPlaceholderSVG("艾欧特品牌重塑")},
-    {id:"w3",title:"美锐品牌标识",category:"品牌视觉",desc:"品牌策划公司标志设计",imageData:getPlaceholderSVG("美锐品牌标识")},
-    {id:"w4",title:"智慧环卫平台UI",category:"UI/UX设计",desc:"B端数据可视化界面",imageData:getPlaceholderSVG("智慧环卫平台UI")},
-    {id:"w5",title:"移动端APP设计",category:"UI/UX设计",desc:"iOS/Android双端适配",imageData:getPlaceholderSVG("移动端APP设计")},
-    {id:"w6",title:"企业宣传画册",category:"平面印刷",desc:"16P精装画册设计",imageData:getPlaceholderSVG("企业宣传画册")},
-    {id:"w7",title:"产品包装设计",category:"平面印刷",desc:"系列包装视觉方案",imageData:getPlaceholderSVG("产品包装设计")},
-    {id:"w8",title:"电商主图设计",category:"运营设计",desc:"天猫/京东主图套图",imageData:getPlaceholderSVG("电商主图设计")},
-    {id:"w9",title:"商业提案PPT",category:"PPT视觉",desc:"企业级演示方案",imageData:getPlaceholderSVG("商业提案PPT")},
-    {id:"w10",title:"3D渲染海报",category:"其他设计",desc:"C4D创意视觉",imageData:getPlaceholderSVG("3D渲染海报")}
-];}
 
 function renderCategories(){
 var container=document.getElementById('worksCategories');
@@ -423,12 +621,7 @@ var html='';
 CATEGORIES.forEach(function(cat){
 var count=0;
 worksData.forEach(function(w){if(w.category===cat.name)count++;});
-var bgHtml='';
-if(categoryImages[cat.id]){
-    bgHtml='<img src="'+esc(categoryImages[cat.id])+'" alt="'+esc(cat.name)+'" style="width:100%;height:100%;object-fit:cover;opacity:0.5;">';
-}else{
-    bgHtml='<div style="width:100%;height:100%;background:'+cat.color+';opacity:0.25;"></div>';
-}
+var bgHtml='<img src="'+cat.cover+'" alt="'+esc(cat.name)+'" style="width:100%;height:100%;object-fit:cover;opacity:0.55;" onerror="this.style.display=\'none\'">';
 html+='<div class="category-card" data-category="'+cat.name+'">'
     +'<div class="category-bg">'+bgHtml+'</div>'
     +'<div class="category-overlay"><div class="category-name">'+cat.name+'</div><div class="category-count">'+count+' 个作品</div></div>'
@@ -576,10 +769,9 @@ window.scrollTo(0,0);
 }
 document.getElementById('journalBack').addEventListener('click',closeJournalArticle);
 
-/* ===== 下载简历（优先从 IndexedDB 读取）===== */
+/* ===== 下载简历 ===== */
 document.getElementById('downloadResumeBtn').addEventListener('click',function(){
     var resumeFilename=localStorage.getItem('zgj_resume_filename')||'祝光军_简历.pdf';
-    /* 优先检查：外部文件名（需要文件放在 portfolio 文件夹）*/
     if(resumeFilename&&resumeFilename.indexOf('.')>0&&resumeFilename!=='祝光军_简历.pdf'){
         var a=document.createElement('a');
         a.href=resumeFilename;
@@ -589,37 +781,19 @@ document.getElementById('downloadResumeBtn').addEventListener('click',function()
         document.body.removeChild(a);
         return;
     }
-    /* 其次检查：IndexedDB 中的简历文件 */
-    dbGet('files','zgj_resume_file',function(val){
-        if(val&&val.data){
-            var a=document.createElement('a');
-            a.href=val.data;
-            a.download=val.name||resumeFilename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            return;
-        }
-        /* 回退：生成文本简历 */
-        var contactD=JSON.parse(localStorage.getItem(CONTACT_KEY)||'{}');
-        var email=contactD.email||'872408005@qq.com';
-        var phone=contactD.phone||'18605022848';
-        var location=contactD.location||'中国 · 厦门';
-        var career=loadCareerData();
-        var content='祝光军 简历\n==================\n邮箱：'+email+'\n电话：'+phone+'\n地址：'+location+'\n\n【工作经历】\n'+career.map(function(e){return e.period+'\n'+e.company+' | '+e.role+'\n'+e.desc;}).join('\n\n')+'\n';
-        var blob=new Blob([content],{type:'text/plain;charset=utf-8'});
-        var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='祝光军_简历.txt';
-        document.body.appendChild(a);a.click();document.body.removeChild(a);
-    });
+    /* 生成文本简历 */
+    var career=loadCareerData();
+    var content='祝光军 简历\n==================\n邮箱：872408005@qq.com\n电话：18605022848\n地址：中国 · 厦门\n\n【工作经历】\n'+career.map(function(e){return e.period+'\n'+e.company+' | '+e.role+'\n'+e.desc;}).join('\n\n')+'\n';
+    var blob=new Blob([content],{type:'text/plain;charset=utf-8'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='祝光军_简历.txt';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
 });
 
 /* ===== 初始化 ===== */
 loadBanner();
 loadAbout();
 renderTimeline();
-loadCategoryImages(function(){  // 先加载分类图片
-    loadWorksData();  // 再加载作品数据
-});
+loadWorksData();
 renderJournalList();
 loadContact();
 </script>
