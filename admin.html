@@ -1047,4 +1047,23 @@ function downloadExportData(){
     URL.revokeObjectURL(url);
 }
 
+}
+
 </script>
+
+<div class="modal-overlay" id="exportModal">
+<div class="modal-box" style="max-width:680px;">
+  <h3>📤 导出数据（手动同步用）</h3>
+  <p style="font-size:0.8rem;color:#6b727c;margin-bottom:1rem;">
+    复制下方 JSON → 粘贴到 <a href="https://github.com/JUJN88/portfolio/edit/main/data.json" target="_blank" style="color:#1e6fd9;">GitHub data.json</a> → Commit
+  </p>
+  <textarea id="exportTextarea" style="width:100%;height:260px;background:#050505;color:#eaeef2;border:1px solid #222;padding:0.8rem;font-size:0.78rem;font-family:monospace;resize:vertical;"></textarea>
+  <div style="margin-top:1rem;display:flex;gap:0.8rem;">
+    <button onclick="copyExportData()" style="background:#1e6fd9;color:#fff;border:none;padding:0.5rem 1.2rem;cursor:pointer;">📋 复制 JSON</button>
+    <button onclick="downloadExportData()" style="background:transparent;border:1px solid #333;color:#aaa;padding:0.5rem 1.2rem;cursor:pointer;">⬇ 下载 JSON 文件</button>
+    <button onclick="document.getElementById('exportModal').classList.remove('active')" style="background:transparent;border:1px solid #333;color:#aaa;padding:0.5rem 1.2rem;cursor:pointer;">关闭</button>
+  </div>
+</div>
+</div>
+
+</body>
