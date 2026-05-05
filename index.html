@@ -233,6 +233,21 @@ body{background:#000;color:#eaeef2;font-family:'Inter',-apple-system,BlinkMacSys
 </div>
 
 <script>
+/* ===== GitHub Data Config ===== */
+const GITHUB_DATA_URL = "https://raw.githubusercontent.com/JUJN88/portfolio/main/data.json";
+var siteData = null; // 全局数据缓存
+
+async function loadSiteData() {
+    try {
+        const resp = await fetch(GITHUB_DATA_URL + "?t=" + Date.now());
+        if (resp.ok) {
+            siteData = await resp.json();
+        }
+    } catch(e) {
+        console.log('Using local data');
+    }
+}
+
 /* ===== 配置 ===== */
 const CATEGORIES = [
 { id:'brand', name:'品牌视觉', cover:'images/covers/brand.jpg.png', color:'#1e6fd9' },
@@ -530,16 +545,23 @@ try{return 'data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svg)));
 
 /* ===== 数据加载 ===== */
 
-function loadBanner(){
-try{
-var d=JSON.parse(localStorage.getItem('zgj_banner_text')||'{}');
-if(d.title)document.getElementById('bannerTitle').textContent=d.title;
-if(d.subtitle)document.getElementById('bannerSubtitle').textContent=d.subtitle;
-}catch(e){}
-// 使用静态 banner 图片
-document.getElementById('bannerInner').style.backgroundImage='url(images/banner/banner.jpg)';
-document.getElementById('bannerInner').style.backgroundSize='cover';
-document.getElementById('bannerInner').style.backgroundPosition='center';
+async function loadBanner(){
+    // 从GitHub数据加载Banner文字
+    if (siteData && siteData.banner) {
+        document.getElementById('bannerTitle').textContent = siteData.banner.title;
+        document.getElementById('bannerSubtitle').textContent = siteData.banner.subtitle;
+    } else {
+        // 降级：从LocalStorage加载
+        try {
+            var d = JSON.parse(localStorage.getItem('zgj_banner_text')||'{}');
+            if(d.title) document.getElementById('bannerTitle').textContent = d.title;
+            if(d.subtitle) document.getElementById('bannerSubtitle').textContent = d.subtitle;
+        } catch(e) {}
+    }
+    // 使用静态 banner 图片
+    document.getElementById('bannerInner').style.backgroundImage='url(images/banner/banner.jpg)';
+    document.getElementById('bannerInner').style.backgroundSize='cover';
+    document.getElementById('bannerInner').style.backgroundPosition='center';
 }
 
 function loadAbout(){
@@ -548,7 +570,14 @@ var defaultText2='拥抱新技术与AI工具，独立完成从创意企划到印
 var defaultText3='厦门 | 全案视觉 | 设计管理';
 var defaultSkills=['PS / AI','XD / Figma','AE / C4D','品牌VI','UI/UX','印刷工艺','视频剪辑','3D渲染','创意策划'];
 var d={},skills=defaultSkills;
-try{d=JSON.parse(localStorage.getItem(ABOUT_KEY)||'{}');}catch(e){}
+
+// 优先从GitHub数据加载
+if (siteData && siteData.about) {
+    d = siteData.about;
+} else {
+    // 降级：从LocalStorage加载
+    try{d=JSON.parse(localStorage.getItem(ABOUT_KEY)||'{}');}catch(e){}
+}
 document.getElementById('aboutText').innerHTML=
 '<p>'+esc(d.text1||defaultText1)+'</p>'+
 '<p>'+esc(d.text2||defaultText2)+'</p>'+
@@ -567,6 +596,13 @@ var defaultCareer=[
 {id:'exp4',period:'2010.12 - 2016.06',company:'厦门赛博数码广场有限公司',role:'平面设计',desc:'负责商场美陈、促销活动视觉物料设计及制作，熟悉线下广告规范，节约成本。'},
 {id:'exp5',period:'2009.09 - 2010.10',company:'福州华鑫印刷有限公司',role:'平面设计',desc:'负责印刷文件排版、拼版及跟单，精通印刷材质与工艺流程。'}
 ];
+
+// 优先从GitHub数据加载
+if (siteData && siteData.career && siteData.career.length) {
+    return siteData.career;
+}
+
+// 降级：从LocalStorage加载
 try{
 var stored=localStorage.getItem(CAREER_KEY);
 if(stored){var arr=JSON.parse(stored);if(arr&&arr.length)return arr;}
@@ -587,17 +623,28 @@ container.innerHTML='<div class="timeline">'+html+'</div>';
 
 function loadContact(){
 var defaultContact={email:'872408005@qq.com',phone:'18605022848',location:'中国 · 厦门',note:'商务合作 / 设计委托'};
-try{
-var d=JSON.parse(localStorage.getItem(CONTACT_KEY)||'{}');
-var email=d.email||defaultContact.email;
-var phone=d.phone||defaultContact.phone;
-var location=d.location||defaultContact.location;
-var note=d.note||defaultContact.note;
-}catch(e){
-var email=defaultContact.email;
-var phone=defaultContact.phone;
-var location=defaultContact.location;
-var note=defaultContact.note;
+var email, phone, location, note;
+
+// 优先从GitHub数据加载
+if (siteData && siteData.contact) {
+    email = siteData.contact.email || defaultContact.email;
+    phone = siteData.contact.phone || defaultContact.phone;
+    location = siteData.contact.location || defaultContact.location;
+    note = siteData.contact.note || defaultContact.note;
+} else {
+    // 降级：从LocalStorage加载
+    try{
+        var d=JSON.parse(localStorage.getItem(CONTACT_KEY)||'{}');
+        email=d.email||defaultContact.email;
+        phone=d.phone||defaultContact.phone;
+        location=d.location||defaultContact.location;
+        note=d.note||defaultContact.note;
+    }catch(e){
+        email=defaultContact.email;
+        phone=defaultContact.phone;
+        location=defaultContact.location;
+        note=defaultContact.note;
+    }
 }
 document.getElementById('contactBlock').innerHTML=
 '<div>📧 '+esc(email)+'</div>'+
@@ -790,12 +837,16 @@ document.getElementById('downloadResumeBtn').addEventListener('click',function()
 });
 
 /* ===== 初始化 ===== */
-loadBanner();
-loadAbout();
-renderTimeline();
-loadWorksData();
-renderJournalList();
-loadContact();
+// 先从GitHub加载数据，然后初始化页面
+(async function init() {
+    await loadSiteData();  // 从GitHub加载数据
+    loadBanner();
+    loadAbout();
+    renderTimeline();
+    loadWorksData();
+    renderJournalList();
+    loadContact();
+})();
 </script>
 </body>
 </html>
